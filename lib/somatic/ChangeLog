@@ -1,0 +1,4 @@
+Please add the version number, the git commit number and the git log message.
+
+0.0.1: 8a901baaecaf121949509b73868ffdf1e4b8e088: Added the option to set the command channel to NULL and not send any commands by mistake for the waist modules in somatic_motor_t
+0.0.2: ea70efd011f59e5ba567fb5bbc2cf134a2c542ca: Changed sns -k so it removes the folder of the daemon in var/run/somatic

@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!-- @file 03-World-IK.urdf -->
+<!-- @author Can Erdogan -->
+<!-- @date May 13, 2013 -->
+<!-- @brief Contains the definition for the world setup where the green arrow object -->
+<!-- dictates the position and the direction for the end-effector and the red objects are the -->
+<!-- obstacles that the IK should avoid. -->
+ 
+<world name="schunk_with_desktop">
+	
+	<!-- Include the models by including either the complete urdf or referencing the file name -->
+	<include filename="../model/Krang.urdf" model_name="krang"/>
+	<include filename="../objects/redPoint.urdf" model_name="redPoint"/>
+	<include filename="../objects/bluePoint.urdf" model_name="bluePoint"/>
+	<include filename="../objects/greenPoint.urdf" model_name="greenPoint"/>
+	<entity model="krang" name="Krang"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="greenPoint" name="PointInput1"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bluePoint" name="PointInput2"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bluePoint" name="PointLeverFulcrum"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="redPoint" name="PointLeverLoad"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bluePoint" name="Intersect1"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+
+	<include filename="../objects/fifty_real.urdf" model_name="load"/>
+	<entity model="load" name="Load"> <origin xyz="-1 0.81 0.0525" rpy="0 0 -1.5708"/> </entity>  
+	<include filename="../objects/fulcrum_real.urdf" model_name="fulcrum"/>
+	<entity model="fulcrum" name="Fulcrum"> <origin xyz="0 0 5" rpy="1.5708 0 -1.5708"/> </entity>  
+	<include filename="../objects/stick_real_short.urdf" model_name="lever"/>
+	<entity model="lever" name="Lever"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<include filename="../objects/scale.urdf" model_name="scale"/>
+	<entity model="scale" name="Scale1"> <origin xyz="-0.8 0.92 0.02625" rpy="0 0 -1.5708"/> </entity>  
+	<entity model="scale" name="Scale2"> <origin xyz="-1.2 0.92 0.02625" rpy="0 0 -1.5708"/> </entity>  
+	<include filename="../objects/wall3.urdf" model_name="wall3"/>
+	<entity model="wall3" name="Wall3"> <origin xyz="-0.17 -0.5 1.03" rpy="0.0 0 0.0"/> </entity>  
+	<entity model="wall3" name="Wall3b"> <origin xyz="-3.02 3.34 1.03" rpy="0.0 0 -1.5708"/> </entity>  
+</world> 

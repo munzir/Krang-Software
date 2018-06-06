@@ -1,0 +1,36 @@
+#! /bin/sh
+# @file /etc/init.d/shareNetworkWithVision
+# @author Can Erdogan
+# @date Apr 23, 2013
+# @brief This script is an ad-hoc attempt to setup the network configuration
+# of Krang's main computer to talk with the vision computer.
+
+case "$1" in
+  start)
+
+    echo "Configuring the network to talk with the vision computer"
+    
+		# Set the eth0 to static ip address
+		ifdown eth0
+		ifconfig eth0 192.168.10.1 netmask 255.255.255.0
+
+		# Enable ipforwarding and change the ip table stuff
+		sysctl -w net.ipv4.ip_forward=1
+		iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+
+		# These should be set if a problem arises but we do them anyway
+		iptables -F FORWARD
+		iptables -A FORWARD -j ACCEPT
+		iptables -nvL
+    ;;
+
+  stop)
+    ;;
+  *)
+    echo "Usage: /etc/init.d/shareNetworkWithVision {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+    

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<object name="plate">
+  <link name="root">
+		<visual> 
+			<geometry> <box size="1.2192 0.6096 0.0127"/> </geometry> 
+		</visual>
+		<collision> 
+			<geometry> <box size="1.2192 0.6096 0.0127"/> </geometry> 
+		</collision> 
+  </link>
+</robot>

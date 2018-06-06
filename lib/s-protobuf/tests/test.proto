@@ -1,0 +1,34 @@
+package proto_test;
+
+message test1 {
+  required int32 a = 1;
+}
+
+message test2 {
+  required string b = 2;
+}
+
+message test3 {
+  required test1 c = 3;
+}
+
+message test4 {
+  repeated int32 d = 4;
+}
+
+message testx1 {
+  repeated sfixed32 a = 1;
+}
+
+message testx2 {
+  enum e {
+    A = 0;
+    B = 10;
+    C = 20;
+  }
+  required e a = 1;
+}
+
+message float_msg {
+  required float a = 1;
+}

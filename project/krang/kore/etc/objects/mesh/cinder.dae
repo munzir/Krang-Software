@@ -1,0 +1,403 @@
+<?xml	version="1.0"	encoding="utf-8"?>
+<COLLADA version="1.4.0" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+	<asset>
+		<contributor>
+			<author>NxuStream2 converter - http://www.ageia.com</author>
+			<authoring_tool>PhysX	Rocket,	PhysX	Viewer,	or CreateDynamics</authoring_tool>
+			<comments>questions	to:	jratcliff@ageia.com</comments>
+		</contributor>
+		 <created>2014-02-15T20:34:53.536Z</created>
+		 <modified>2014-02-15T20:34:53.536Z</modified>
+		<unit	meter="1"	name="meter"/>
+		<up_axis>Y_UP</up_axis>
+	</asset>
+	 <library_materials>
+			<material	id="Material"	name="Material">
+				 <instance_effect	url="#Material-fx"></instance_effect>
+			</material>
+			<material	id="SWMaterial-0"	name="SWMaterial-0">
+				 <instance_effect	url="#SWMaterial-fx-0"></instance_effect>
+			</material>
+	 </library_materials>
+	 <library_effects>
+			<effect	id="Material-fx" name="Material">
+				 <profile_COMMON>
+						<technique id="Material-fx-COMMON-0" sid="COMMON">
+							 <phong>
+									<ambient>
+										 <color>0.803922 0.588235	0.92549	1</color>
+									</ambient>
+									<diffuse>
+										 <color>0.803922 0.588235	0.92549	1</color>
+									</diffuse>
+									<specular>
+										 <color>0.631373 0.631373	0.631373 1</color>
+									</specular>
+									<shininess>
+										 <float>1</float>
+									</shininess>
+									<reflective>
+										 <color>0	0	0	1</color>
+									</reflective>
+									<transparent>
+										 <color>1	1	1	1</color>
+									</transparent>
+									<transparency>
+										 <float>0</float>
+									</transparency>
+							 </phong>
+						</technique>
+				 </profile_COMMON>
+			</effect>
+			<effect	id="SWMaterial-fx-0" name="SWMaterial-0">
+				 <profile_COMMON>
+						<technique id="Material-fx-COMMON-1" sid="COMMON">
+							 <phong>
+									<ambient>
+										 <color>0.158431 0.163922 0.186667 1</color>
+									</ambient>
+									<diffuse>
+										 <color>0.792157 0.819608 0.933333 1</color>
+									</diffuse>
+									<specular>
+										 <color>0.396078 0.409804 0.466667 1</color>
+									</specular>
+									<shininess>
+										 <float>0.400000</float>
+									</shininess>
+									<reflective>
+										 <color>0	0	0	1</color>
+									</reflective>
+									<transparent opaque="A_ONE">
+										 <color>1	1	1	1</color>
+									</transparent>
+									<transparency>
+										 <float>1.000000</float>
+									</transparency>
+							 </phong>
+						</technique>
+				 </profile_COMMON>
+			</effect>
+	 </library_effects>
+	 <library_lights>
+		<light id="Light-0" name="Light-0">
+			<technique_common>
+				<directional>
+					<color>0.300000012 0.300000012 0.300000012</color>
+				</directional>
+			</technique_common>
+		</light>
+		<light id="Light-1" name="Light-1">
+			<technique_common>
+				<directional>
+					<color>0.200000003 0.200000003 0.200000003</color>
+				</directional>
+			</technique_common>
+		</light>
+		<light id="Light-2" name="Light-2">
+			<technique_common>
+				<directional>
+					<color>0.100000001 0.100000001 0.100000001</color>
+				</directional>
+			</technique_common>
+		</light>
+	 </library_lights>
+	 <library_cameras>
+		<camera id="Camera-0" name="Camera-0" >
+			<optics>
+				<technique_common>
+				<perspective>
+					<xfov>26.991464615</xfov>
+					<aspect_ratio>1.294117689</aspect_ratio>
+					<znear>0.100000001</znear>
+					<zfar>5000</zfar>
+				</perspective>
+				</technique_common>
+			</optics>
+		</camera>
+	 </library_cameras>
+	<library_geometries>
+		<geometry	id="TriangleMesh_0-Mesh" name="TriangleMesh_0-Mesh">
+			<mesh>
+				<source	id="TriangleMesh_0-Position">
+					<float_array count="72"	id="TriangleMesh_0-Position-array">
+						0.094499998 0.389999986	0.094499998	0.094499998 0	-0.094499998	0.094499998 0.389999986	-0.094499998	0.094499998 0	0.094499998	
+						-0.094499998 0.389999986	-0.094499998	-0.057500001 0.018999999	-0.094499998	-0.094499998 0	-0.094499998	-0.057500001 0.177499995	-0.094499998	
+						0.057500001 0.177499995	-0.094499998	0.057500001 0.018999999	-0.094499998	0.057500001 0.370999992	-0.094499998	0.057500001 0.212500006	-0.094499998	
+						-0.057500001 0.212500006	-0.094499998	-0.057500001 0.370999992	-0.094499998	-0.094499998 0	0.094499998	-0.094499998 0.389999986	0.094499998	
+						0.057500001 0.370999992	0.094499998	-0.057500001 0.370999992	0.094499998	0.057500001 0.212500006	0.094499998	0.057500001 0.177499995	0.094499998	
+						-0.057500001 0.177499995	0.094499998	-0.057500001 0.018999999	0.094499998	-0.057500001 0.212500006	0.094499998	0.057500001 0.018999999	0.094499998	
+					</float_array>
+					<technique_common>
+						<accessor	count="24" source="#TriangleMesh_0-Position-array" stride="3">
+							<param name="X"	type="float"/>
+							<param name="Y"	type="float"/>
+							<param name="Z"	type="float"/>
+						</accessor>
+					 </technique_common>
+				 </source>
+				<vertices	id="TriangleMesh_0-Vertex">
+					<input semantic="POSITION" source="#TriangleMesh_0-Position"/>
+				</vertices>
+				<triangles material="SWMaterial-0" count="52">
+					<input offset="0"	semantic="VERTEX"	source="#TriangleMesh_0-Vertex"/>
+				 <p>15 16 0 16 15 17 15 22 17 
+				 18 0 16 0 4 15 22 13 17 
+				 17 10 16 22 15 14 4 14 15 
+				 22 20 18 0 18 19 16 11 18 
+				 11 22 18 4 10 13 4 0 2 
+				 10 4 2 10 17 13 12 4 13 
+				 11 16 10 2 11 10 11 2 1 
+				 0 1 2 11 8 12 4 12 7 
+				 22 11 12 13 22 12 19 3 0 
+				 19 18 20 1 0 3 14 20 22 
+				 21 7 20 20 8 19 8 23 19 
+				 14 23 21 23 14 3 23 5 21 
+				 6 3 14 20 14 21 3 19 23 
+				 1 8 11 14 4 6 4 5 6 
+				 7 12 8 4 7 5 8 20 7 
+				 9 6 5 7 21 5 3 6 1 
+				 8 1 9 5 23 9 6 9 1 
+				 23 8 9 </p>
+				</triangles>
+			</mesh>
+		</geometry>
+		<geometry	id="ActorShape0_0-Mesh" name="ActorShape0_0-Mesh">
+			<mesh>
+				<source	id="ActorShape0_0-Position">
+					<float_array count="72"	id="ActorShape0_0-Position-array">
+						0.094499998 0.389999986	-0.094499998	0.094499998 0.389999986	0.094499998	0.094499998 0	-0.094499998	0.094499998 0	0.094499998	
+						-0.057500001 0.018999999	-0.094499998	-0.094499998 0.389999986	-0.094499998	-0.057500001 0.177499995	-0.094499998	-0.057500001 0.212500006	-0.094499998	
+						0.057500001 0.177499995	-0.094499998	0.057500001 0.212500006	-0.094499998	0.057500001 0.018999999	-0.094499998	-0.094499998 0	-0.094499998	
+						0.057500001 0.370999992	-0.094499998	-0.057500001 0.370999992	-0.094499998	-0.094499998 0.389999986	0.094499998	-0.094499998 0	0.094499998	
+						0.057500001 0.177499995	0.094499998	0.057500001 0.212500006	0.094499998	-0.057500001 0.177499995	0.094499998	-0.057500001 0.212500006	0.094499998	
+						0.057500001 0.370999992	0.094499998	-0.057500001 0.370999992	0.094499998	0.057500001 0.018999999	0.094499998	-0.057500001 0.018999999	0.094499998	
+					</float_array>
+					<technique_common>
+						<accessor	count="24" source="#ActorShape0_0-Position-array" stride="3">
+							<param name="X"	type="float"/>
+							<param name="Y"	type="float"/>
+							<param name="Z"	type="float"/>
+						</accessor>
+					 </technique_common>
+				 </source>
+				<source	id="ActorShape0_0-Normal">
+					<float_array count="18"	id="ActorShape0_0-Normal-array">
+						1 0	-0	-0 0	-1	-1 0	0	0 0	1	
+						0 1	0	0 -1	0	
+					</float_array>
+					<technique_common>
+						<accessor	count="6" source="#ActorShape0_0-Normal-array" stride="3">
+							<param name="X"	type="float"/>
+							<param name="Y"	type="float"/>
+							<param name="Z"	type="float"/>
+						</accessor>
+					 </technique_common>
+				 </source>
+				<vertices	id="ActorShape0_0-Vertex">
+					<input semantic="POSITION" source="#ActorShape0_0-Position"/>
+				</vertices>
+				<triangles material="SWMaterial-0" count="52">
+					<input offset="0"	semantic="VERTEX"	source="#ActorShape0_0-Vertex"/>
+					<input offset="1"	semantic="NORMAL"	source="#ActorShape0_0-Normal"/>
+				 <p>0 0 1 0 2 0 2 0 1 0 3 0 4 1 5 1 6 1 
+				 6 1 5 1 7 1 6 1 7 1 8 1 8 1 7 1 9 1 
+				 10 1 2 1 4 1 4 1 2 1 11 1 4 1 11 1 5 1 
+				 10 1 8 1 2 1 2 1 8 1 9 1 2 1 9 1 0 1 
+				 0 1 9 1 12 1 0 1 12 1 5 1 5 1 12 1 13 1 
+				 5 1 13 1 7 1 14 2 5 2 15 2 15 2 5 2 11 2 
+				 16 3 17 3 18 3 18 3 17 3 19 3 20 3 1 3 21 3 
+				 21 3 1 3 14 3 21 3 14 3 19 3 19 3 14 3 15 3 
+				 19 3 15 3 18 3 20 3 17 3 1 3 1 3 17 3 16 3 
+				 1 3 16 3 3 3 3 3 16 3 22 3 3 3 22 3 15 3 
+				 15 3 22 3 23 3 15 3 23 3 18 3 5 4 14 4 0 4 
+				 0 4 14 4 1 4 15 5 11 5 3 5 3 5 11 5 2 5 
+				 7 0 13 0 19 0 19 0 13 0 21 0 13 5 12 5 21 5 
+				 21 5 12 5 20 5 12 2 9 2 20 2 20 2 9 2 17 2 
+				 9 4 7 4 17 4 17 4 7 4 19 4 10 4 4 4 22 4 
+				 22 4 4 4 23 4 4 0 6 0 23 0 23 0 6 0 18 0 
+				 6 5 8 5 18 5 18 5 8 5 16 5 8 2 10 2 16 2 
+				 16 2 10 2 22 2 					</p>
+				</triangles>
+			</mesh>
+		</geometry>
+	</library_geometries>
+	<library_visual_scenes>
+		<visual_scene	id="Scene0-Visual"	name="Scene0-Visual">
+			<node	id="Actor0-Node" name="Actor0" type="NODE">
+        <translate>0	0 0</translate>
+        <rotate>1 0	0	 0</rotate>
+			    <instance_geometry url="#ActorShape0_0-Mesh" >
+				 <bind_material>
+				  <technique_common>
+				  <instance_material symbol="SWMaterial-0" target="#SWMaterial-0"/>
+				  </technique_common>
+				 </bind_material>
+				</instance_geometry>
+			</node>
+			<node id="Light-0-Node" name="Light-0" type="NODE">
+				<translate> 7.099999905 7.099999905 0</translate>
+				<rotate> -0.707106709 0.353553355 0 90</rotate>
+				<instance_light url="#Light-0" />
+			</node>
+			<node id="Light-1-Node" name="Light-1" type="NODE">
+				<translate> -9.199999809 3.400000095 -1.799999952</translate>
+				<rotate> -0.346650153 -0.4689973 0 100.399238586</rotate>
+				<instance_light url="#Light-1" />
+			</node>
+			<node id="Light-2-Node" name="Light-2" type="NODE">
+				<translate> -3.400000095 6.099999905 -7.099999905</translate>
+				<rotate> 0.980710685 0 -0.097732373 218.650192261</rotate>
+				<instance_light url="#Light-2" />
+			</node>
+			<node id="Camera-0-Node" name="Camera-0" type="NODE">
+              <translate>3.636814833	-0.323120534 -4.059925079</translate>
+              <rotate>0.618177235 0.767126799	0.17138654	 145.760971069</rotate>
+				<instance_camera url="#Camera-0" />
+			</node>
+			</visual_scene>
+	</library_visual_scenes>
+	<library_physics_materials>
+		<physics_material	id="pmat0_0-PhysicsMaterial"	name="pmat0_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.029999999</dynamic_friction>
+				<restitution>0</restitution>
+				<static_friction>0.029999999</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat1_0-PhysicsMaterial"	name="pmat1_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.100000001</dynamic_friction>
+				<restitution>0.001</restitution>
+				<static_friction>0.100000001</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat2_0-PhysicsMaterial"	name="pmat2_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.200000003</dynamic_friction>
+				<restitution>0.002</restitution>
+				<static_friction>0.200000003</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat3_0-PhysicsMaterial"	name="pmat3_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.300000012</dynamic_friction>
+				<restitution>0.003</restitution>
+				<static_friction>0.300000012</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat4_0-PhysicsMaterial"	name="pmat4_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.400000006</dynamic_friction>
+				<restitution>0.004</restitution>
+				<static_friction>0.400000006</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat5_0-PhysicsMaterial"	name="pmat5_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.5</dynamic_friction>
+				<restitution>0.005</restitution>
+				<static_friction>0.5</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat6_0-PhysicsMaterial"	name="pmat6_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.600000024</dynamic_friction>
+				<restitution>0.006</restitution>
+				<static_friction>0.600000024</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat7_0-PhysicsMaterial"	name="pmat7_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.699999988</dynamic_friction>
+				<restitution>0.007</restitution>
+				<static_friction>0.699999988</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat8_0-PhysicsMaterial"	name="pmat8_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.800000012</dynamic_friction>
+				<restitution>0.008</restitution>
+				<static_friction>0.800000012</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat9_0-PhysicsMaterial"	name="pmat9_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0.900000036</dynamic_friction>
+				<restitution>0.009</restitution>
+				<static_friction>0.900000036</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material	id="pmat10_0-PhysicsMaterial"	name="pmat10_0-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>1</dynamic_friction>
+				<restitution>0.01</restitution>
+				<static_friction>1</static_friction>
+			</technique_common>
+		</physics_material>
+	</library_physics_materials>
+	<library_physics_models>
+		<physics_model id="Scene0-PhysicsModel">
+			<rigid_body	sid="Actor0-RigidBody" name="cinder">
+				<technique_common>
+					<dynamic>false</dynamic>
+					<mass>1</mass>
+					<instance_physics_material url="#pmat0_0-PhysicsMaterial"/>
+					<shape>
+					 <density>1</density>
+						<instance_physics_material url="#pmat0_0-PhysicsMaterial"/>
+						<instance_geometry url="#TriangleMesh_0-Mesh">
+						 <bind_material>
+						  <technique_common>
+						  <instance_material symbol="SWMaterial-0" target="#SWMaterial-0"/>
+						  </technique_common>
+						 </bind_material>
+						</instance_geometry>
+            <translate>0	0 0</translate>
+            <rotate>1 0	0	 0</rotate>
+					 <extra>
+						 <technique	profile="PhysX">
+							 <group>0</group>
+							 <skinWidth>0.000378</skinWidth>
+							 <disable_collision>false</disable_collision>
+						 </technique>
+					 </extra>
+					 </shape>
+					</technique_common>
+			<extra>
+				<technique profile="PhysX">
+					<group>0</group>
+					<disable_collision>true</disable_collision>
+					<disable_response>false</disable_response>
+					<lock_com>true</lock_com>
+				</technique>
+			</extra>
+			 </rigid_body>
+		</physics_model>
+		<physics_model id="Scene0-PhysicsInstance">
+			<instance_physics_model	url="#Scene0-PhysicsModel">
+				<instance_rigid_body target="#Actor0-Node" body="Actor0-RigidBody">
+					<technique_common>
+					</technique_common>
+				</instance_rigid_body>
+			<extra>
+				<technique profile="PhysX">
+				</technique>
+			</extra>
+			</instance_physics_model>
+		</physics_model>
+	</library_physics_models>
+	<library_physics_scenes>
+		<physics_scene id="SceneInstances-Physics">
+			<instance_physics_model	url="#Scene0-PhysicsInstance"/>
+			<technique_common>
+				<gravity>0	0 0</gravity>
+				<time_step>0.000781</time_step>
+			</technique_common>
+		</physics_scene>
+	</library_physics_scenes>
+	<scene>
+		<instance_physics_scene	url="#SceneInstances-Physics"/>
+		<instance_visual_scene	url="#Scene0-Visual"/>
+	</scene>
+</COLLADA>

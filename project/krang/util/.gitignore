@@ -1,0 +1,4 @@
+
+*.swp
+/stop/build
+/somatic_motor_cmd/build

@@ -1,0 +1,9 @@
+amc-test
+*.swo
+build/
+amciod
+.deps
+*.swp
+*.so
+*.o
+

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# krang-internet service - monitors and fixes krang's internet
+# 
+# Crudely monitors internet connectivity and, on failure, restarts the
+# dhcp client, whcih seems to be a solution.
+# 
+# Author: Saul Reynolds-Haertle
+# Date: 29 July 2013
+
+# configurations
+PIDFILE=/var/run/krang-internet-fixer.pid
+EXECFILE=/usr/local/bin/krang-internet-fixer
+
+# die on failure
+set -e
+
+# make sure our script exists
+test -x $EXECFILE || exit 0
+
+
+
+# functions
+function start() {
+    if start-stop-daemon --start --oknodo --background --pidfile $PIDFILE --make-pidfile --exec $EXECFILE; then
+        echo "krang-internet-fixer script should be running now."
+    else
+        echo "Failed to start the krang-internet-fixer script daemon. I think. Ask Saul to debug."
+    fi
+}
+
+function stop() {
+    if start-stop-daemon --stop --oknodo --pidfile $PIDFILE; then
+        echo "krang-internet-fixer script should be stopped now."
+    else
+        echo "Failed to stop the krang-internet-fixer script daemon. I think. Ask Saul to debug."
+    fi
+}
+
+# branch based on what we've been asked to do
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+esac
+
+# and done
+exit 0

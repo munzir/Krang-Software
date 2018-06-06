@@ -1,0 +1,49 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          somatic
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Short-Description: Starts somatic run directories and starts logger
+### END INIT INFO
+
+SLOGD_IDENT="slogd"
+CHANFILE_EVENT=`ach -F event`
+
+start() {
+    # create channel
+    ach -1 -C event -o 666 -m 512
+
+    # create rundir
+    mkdir -p /var/run/somatic
+    chmod 777 -f /var/run/somatic
+
+    # start daemon
+    slogd -d -I "$SLOGD_IDENT" || (echo "Failed to start slogd" && exit 1)
+}
+
+stop() {
+    sns -k "$SLOGD_IDENT"
+}
+
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    force-reload)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: /etc/init.d/somatic {start|stop|restart}"
+        exit 1;
+esac

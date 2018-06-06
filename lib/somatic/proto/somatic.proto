@@ -1,0 +1,553 @@
+/* -*- mode: C++; c-basic-offset: 4  -*- */
+/*
+ * Copyright (c) 2009-2011, Georgia Tech Research Corporation
+ * All rights reserved.
+ *
+ * Author(s): Neil T. Dantam <ntd@gatech.edu>
+ *            Jon Scholz <jkscholz@gatech.edu>
+ *            Pushkar Kolhe <pushkar@gatech.edu>
+ * Georgia Tech Humanoid Robotics Lab
+ * Under Direction of Prof. Mike Stilman <mstilman@cc.gatech.edu>
+ *
+ *
+ * This file is provided under the following "BSD-style" License:
+ *
+ *
+ *   Redistribution and use in source and binary forms, with or
+ *   without modification, are permitted provided that the following
+ *   conditions are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ *   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ *   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ *   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ *   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ *   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ *   AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *   POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+
+package somatic;
+
+
+
+/**************************/
+/** Basic Messages Types **/
+/**************************/
+//
+// These types should be included as fields in other messages
+//
+
+// the physical unit represented by a number. Note that only MKS units
+// are listed here; that is intentional.
+//
+// commonly used units should have codes < 128 so that they fit in a
+// single byte when varint-encoded
+enum unit {
+    UNIT = 0;
+    // Fundamental
+    METER = 1;
+    KILOGRAM = 2;
+    SECOND = 3;
+    AMPERE = 4;
+    KELVIN = 5;
+    MOLE = 6;
+    CANDELA = 7;
+
+    // Special
+    HERTZ = 10;
+    RADIAN = 11;
+    STERADIAN = 12;
+    NEWTON = 13;
+    PASCAL = 14;
+    JOULE = 15;
+    WATT = 16;
+    COULOMB = 17;
+    VOLT = 18;
+    FARAD = 19;
+    OHM = 20;
+    SIEMENS = 21;
+    WEBER = 22;
+    TESLA = 23;
+    HENRY = 24;
+    CELSIUS = 25;
+    LUMEN = 26;
+    LUX = 27;
+    BECQUEREL = 28;
+    GRAY = 29;
+    SLEVERT = 30;
+    KATAL = 31;
+
+    // compound
+    SQUARE_METER = 50;                  // area
+    CUBIC_METER = 51;                   // volume
+
+    METER_PER_SECOND = 60;              // velocity
+    METER_PER_SECOND_SQUARED = 61;      // acceleration
+    METER_PER_SECOND_CUBED = 62;        // jerk
+    METER_PER_QUARTIC_SECOND = 63;      // snap
+
+    RADIAN_PER_SECOND = 65;             // angular velocity
+    RADIAN_PER_SECOND_SQUARED = 66;     // angular acceleration
+    RADIAN_PER_SECOND_CUBED = 67;       // angular jerk
+    RADIAN_PER_QUARTIC_SECOND = 68;     // angular snap
+
+    NEWTON_METER = 70;                  // torque/moment
+    NEWTON_SECOND = 71;                 // impulse
+
+    // end
+    BOGUS = 127;
+};
+
+// Physical quantities.  If at all possible, the code of the quanitity
+// should correspond to the code of the appropriate unit
+enum quantity {
+    VOID = 0;
+    // Fundamental
+    LENGTH = 1;
+    MASS = 2;
+    TIME = 3;
+    CURRENT = 4;
+    THERMODYNAMIC_TEMPERATURE = 5;
+    AMOUNT = 6;
+    LUMINOUS_INTENSITY = 7;
+
+    // derived
+    FREQUENCY = 10;
+    ANGLE = 11;
+    SOLID_ANGLE = 12;
+    FORCE = 13;
+    PRESSURE = 14;
+    ENERGY = 15;
+    POWER = 16;
+    CHARGE = 17;
+    VOLTAGE = 18;
+    CAPACITANCE = 19;
+    RESISTANCE = 20;
+    CONDUCTANCE = 21;
+    MAGNETIC_FLUX = 22;
+    MAGNETIC_FIELD = 23;
+    INDUCTANCE = 24;
+    TEMPERATURE = 25;
+    LUMINOUS_FLUX = 26;
+    ILLUMINANCE = 27;
+    RADIOACTIVITY = 28;
+    ABSORBED_DOSE = 29;
+    EQUIVALENT_DOSE = 30;
+    CATYLTIC_ACTIVITY = 31;
+
+    // compound
+    AREA = 50;
+    VOLUME = 51;
+
+    VELOCITY = 60;
+    ACCELERATION = 61;
+    JERK = 62;
+    SNAP = 63;
+
+    ANGULAR_VELOCITY = 65;
+    ANGULAR_ACCELERATION = 66;
+    ANGULAR_JERK = 67;
+    ANGULAR_SNAP = 68;
+
+    TORQUE = 70;
+    IMPULSE = 71;
+};
+
+
+// You can view this as either a one-dimensional array of data or
+// a real-valued vector.
+message vector {
+    repeated double data = 1 [packed=true];
+    // the units represented by this vector
+    // may have length == 1 if all elements are the same unit
+    repeated unit units = 8 [packed=true];
+}
+
+// You can view this as either a one-dimensional array of data or
+// an integer-valued vector.
+message ivector {
+    repeated sint64 data = 1 [packed=true];
+}
+
+
+// Stores a column-major matrix. Packs the
+// matrix data into a single array of doubles,
+// and then provides either the row or the column count.
+message matrix {
+    repeated double data = 1 [packed=true]; //COLUMN-MAJOR ORDER!
+
+    optional int32 rows = 2;
+    optional int32 cols = 3;
+
+    // the units represented by this matrix
+    // may have length == 1 if all elements are the same unit
+    repeated unit units = 8 [packed=true];
+
+}
+
+message timespec {
+   required int64 sec = 1;
+   optional int32 nsec = 2;
+}
+
+// codes for self-describing messages
+enum msg_type {
+    MOTOR_CMD = 1;
+    MOTOR_STATE = 2;
+    TRANSFORM = 3;
+    MULTI_TRANSFORM = 4;
+    FORCE_MOMENT = 5;
+    POINT_CLOUD = 6;
+    JOYSTICK = 7;
+    TOUCH = 8;
+    MICROPHONE = 9;
+    BATTERY = 10;
+    WAIST_CMD = 11;
+    LIBERTY = 12;
+    VISUALIZE_DATA = 13;
+		CINDER = 14;
+};
+
+// included in every top-level message
+// used for logging and graceful failures
+
+message metadata {
+    optional int64 seq = 1;       // sequence number of message
+    optional timespec time = 2;   // time the message was sent
+    optional timespec until = 3;  // absolute time until which the message is invalid
+    optional string label = 4;    // string label
+    optional msg_type type = 5;   // type of message
+}
+
+/************************/
+/** TOP LEVEL MESSAGES **/
+/************************/
+
+/*-------------------------*/
+/* Composite Message Types */
+/*-------------------------*/
+//
+// Send these messages on ach channels
+//
+
+// message label_vector {
+//         required vector x = 1;
+//         optional string label = 2;
+//         optional timespec time = 3;
+// }
+
+// message ez_msg {
+//     optional string label = 1;
+//     optional sint64 code = 2;
+//     optional vector x = 3;
+//     optional ivector i = 4;
+//     optional timespec time = 5;
+// }
+
+// all wire messages should be parsable as this
+message base_msg {
+    optional metadata meta = 15;
+}
+
+message transform {
+    optional vector translation = 1; // vector 3
+    optional vector rotation = 2;    // xyzw quaternion
+    optional metadata meta = 15;
+}
+
+
+message multi_transform {
+    optional transform origin = 1;
+    repeated transform tf = 2;
+    optional metadata meta = 15;
+}
+
+message point_cloud {
+    required matrix points = 1;
+    optional matrix distance_map = 2;
+    optional matrix amplitude_map = 3;
+    optional matrix confidence_map = 4;
+    //optional timespec time = 5;
+    optional metadata meta = 15;
+}
+
+
+// A message containing a number of somatic_matrix
+// messages.
+// message matrices {
+//     repeated matrix data = 1;
+// }
+
+message force_moment {
+    required vector force = 1;
+    required vector moment = 2;
+    //optional timespec time = 3;
+    optional metadata meta = 15;
+}
+
+
+/*------------------------*/
+/* Hardware Message Types */
+/*------------------------*/
+//
+// Send these messages on ach channels
+//
+
+enum waist_mode {
+		MOVE_FWD = 0;
+		MOVE_REV = 1;
+		STOP = 2;
+		CURRENT_MODE = 3;
+		REAL_CURRENT_MODE = 4;
+};
+
+message waist_cmd {
+		optional waist_mode mode = 1;
+    optional vector data = 2;
+		optional metadata meta = 15;
+}
+
+message battery {
+    optional bool error = 1;
+    optional vector voltage = 2;
+    optional vector temp = 3;
+    optional metadata meta = 15;
+}
+
+enum motor_param {
+    MOTOR_CURRENT = 0;
+    MOTOR_VELOCITY = 1;
+    MOTOR_POSITION = 2;
+    MOTOR_HALT = 3;
+    MOTOR_RESET = 4;
+    MOTOR_DIGITAL_OUT = 5; // Command Parameter to be used to toggle auxillary digital outputs provided with AMC drives
+};
+
+message motor_cmd {
+    optional motor_param param = 1;
+    optional vector values = 2;
+    optional ivector ivalues = 3; // Used only in case of AMC drives for toggling auxillary digital outputs
+    optional metadata meta = 15;
+}
+
+enum motor_status {
+    MOTOR_OK = 0;
+    MOTOR_FAIL = 1;
+    MOTOR_COMM_FAIL = 2;
+    MOTOR_HW_FAIL = 4;
+};
+
+message motor_state {
+    optional motor_status status = 1;
+    optional vector position = 2;
+    optional vector velocity = 3;
+    optional vector acceleration = 4;
+    optional vector current = 5;
+    optional metadata meta = 15;
+}
+
+message joystick {
+    optional ivector buttons = 1;
+    optional vector axes = 2;
+    optional metadata meta = 15;
+}
+
+message liberty {
+// up to 8 sensors, with 7 doubles each
+    optional vector sensor1 = 1;
+    optional vector sensor2 = 2;
+    optional vector sensor3 = 3;
+    optional vector sensor4 = 4;
+    optional vector sensor5 = 5;
+    optional vector sensor6 = 6;
+    optional vector sensor7 = 7;
+    optional vector sensor8 = 8;
+/*
+    optional ivector sensors = 1;
+    optional matrix data = 2; 
+*/
+    optional metadata meta = 15;
+}
+
+message cinder {
+		optional vector hole = 1;
+		optional vector normal = 2;
+    optional metadata meta = 15;
+}
+
+message dsa {
+    optional ivector output = 1;
+    optional metadata meta = 15;
+}
+
+message touch {
+    repeated matrix values = 1;
+    optional metadata meta = 15;
+}
+
+message hokuyo {
+    optional vector ranges = 1;
+    optional metadata meta = 15;
+}
+
+message microphone {
+    optional double volume = 1;
+    optional metadata meta = 15;
+}
+
+
+message token {
+    optional string type = 1;
+    optional sint64 code = 2;
+    optional vector fattr = 3;
+    optional ivector iattr = 4;
+    optional metadata meta = 15;
+}
+
+message crafty {
+    //optional bytes boardstate = 1;
+    optional string move = 2;
+    optional metadata meta = 15;
+}
+
+message chess_perception {
+    optional vector boardstate = 1;
+    optional vector offset = 2;
+    optional metadata meta = 15;
+}
+
+// Maybe we'll use this someday....
+message can_msg {
+    required int32 id = 1;
+    required int32 data_size = 2;
+    required fixed64 data = 3;
+
+    optional bool extended = 4;
+    optional int32 bus = 5;
+
+    optional metadata meta = 15;
+}
+
+
+message limit {
+    optional quantity quantity = 1;
+    optional int32 index = 2;
+    optional double actual = 3;
+    optional double min = 4;
+    optional double max = 5;
+}
+
+message event {
+    enum priorities {
+        EMERG = 0;    // system is unusable
+        ALERT = 1;    // action must be take immediately
+        CRIT = 2;     // critical conditions
+        ERR = 3;      // error conditions
+        WARNING = 4;  // warning conditions
+        NOTICE = 5;   // normal but significant condition
+        INFO = 6;     // informational
+        DEBUG = 7;    // debug-level messages
+    };
+    optional priorities priority = 1;
+
+    enum codes {
+        UNKNOWN = 0;
+        PROC_HEARTBEAT  = 1;          // period "everything's ok" message
+        PROC_STARTING  = 2;           // daemon is starting up
+        PROC_RUNNING = 3;             // daemon initialized and running
+        PROC_STOPPING = 4;            // daemon is stopping
+        PROC_HALTED = 5;              // daemon has halted
+        PROC_ERR = 6;                 // daemon in an error state
+        PROC_FAILED = 7;              // daemon has failed mysteriously
+
+        COMM_BAD_MSG = 20;            // invalid message received
+        COMM_FAILED_TRANSPORT = 21;   // couldn't send message
+        COMM_TIMEOUT = 22;            // message timeout
+        COMM_DEV = 23;                // couldn't talk to device
+
+        LIMIT = 30;                   // limit condition
+
+        BAD_PARAM = 40;               // invalid parameter
+
+        LOGIC = 50;                   // logic error
+
+        UI = 60;                      // user interaction
+
+        DEV_ERR = 70;                 // device error
+
+        SYS_HALT = 90;                // shutdown everything
+
+        BAD_ASSERT = 99;              // assertion error
+        INSANE = 100;                 // really bad
+    };
+
+    optional codes code = 2;         // numeric code for event type
+    optional string type = 3;       // string name for event
+    optional int32 facility = 4;    // code for what thing the event is about
+    optional string ident = 5;      // string for what thing the event is about
+
+    optional string host = 6;
+    optional int32 pid = 7;
+
+
+    repeated limit limit = 10;
+
+    optional vector attr = 11;
+    optional ivector iattr = 12;
+    optional string sattr = 13;
+
+    optional string comment = 14;
+    optional metadata meta = 15;
+}
+
+
+message monitor_cmd {
+    enum cmd_codes {
+        PROC_START = 1;     ///< start a process
+        PROC_STOP = 2;      ///< stop a process
+        PROC_RESTART = 3;   ///< restart a process
+        PROC_LIST = 4;      ///< start a process
+    }
+    required cmd_codes cmd = 1;  ///< command
+
+    optional string proc = 3; ///< process name / id
+
+    optional vector attr = 5;
+    optional ivector iattr = 6;
+    repeated string sattrs = 7;
+
+    optional metadata meta = 15;
+}
+
+message monitor_resp {
+
+    optional vector attr = 5;
+    optional ivector iattr = 6;
+    repeated string sattrs = 7;
+
+    optional metadata meta = 15;
+}
+
+message visualize_data {
+	repeated vector vecs = 4;
+	optional ivector bools = 5;
+	optional string msg = 7;
+	
+	optional metadata meta = 15;
+}

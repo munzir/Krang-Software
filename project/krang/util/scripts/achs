@@ -1,0 +1,151 @@
+#!/bin/bash
+
+################################################################################
+## USAGE
+################################################################################
+
+# -G means to get all the GET_CHANNELS
+# -P means to put all the PUT_CHANNELS
+# -p adds put channels
+# -g adds get channels
+# -c clears the channels so that you can only specify a few
+# -x adds a command to execute instead of the wait-for-user-input
+# -k sets the address to get or put ach channels from
+# -l creates the channels locally, but doesn't push/pull with achd
+
+# examples:
+# 
+# achs -G -P
+# 
+#     Default, standard use. gets and puts all of krang's importnat
+#     channels. This is all you need if you want to run arbitrary
+#     programs on krang.
+#     
+# achs -G -P -x './04-force-compliance'
+# 
+#     Runs the 04-force-compliance program in the current directory,
+#     but neatly wrapped with ach channel forwarding. Forwarding will
+#     start before the program runs and be automatically cleaned up
+#     when the program exits.
+#     
+# achs -P -c -p 'joystick-data'
+# 
+#     pushes joystick-data and only joystick-data to krang.local.
+# 
+
+################################################################################
+## VARIABLES
+################################################################################
+
+KRANG_ADDRESS=krang.local
+
+GET_CHANNELS='llwa_ft rlwa_ft imu-data llwa-state rlwa-state waist-state torso-state joystick-data lgripper-state rgripper-state'
+PUT_CHANNELS='waist-cmd torso-cmd rlwa-cmd llwa-cmd lgripper-cmd rgripper-cmd'
+
+ACHD_CMD_PUT='achd push -d -r -v'
+ACHD_CMD_GET='achd pull -d -r -v'
+
+DO_GET=
+DO_PUT=
+DO_LOCAL=
+
+COMMAND=
+
+################################################################################
+## ARGUMENT HANDLING
+################################################################################
+
+while getopts "GPlg:p:k:x:" OPTION
+do
+    case $OPTION in
+        G)
+            DO_GET="yes"
+            ;;
+        P)
+            DO_PUT="yes"
+            ;;
+        g)
+            GET_CHANNELS=$GET_CHANNELS' '$OPTARG
+            ;;
+        p)
+            PUT_CHANNELS=$PUT_CHANNELS' '$OPTARG
+            ;;
+        k)
+            KRANG_ADDRESS=$OPTARG
+            ;;
+        x)
+            COMMAND=$OPTARG
+            ;;
+        c)
+            PUT_CHANNELS=''
+            GET_CHANNELS=''
+            ;;
+	l)
+	    DO_LOCAL="yes"
+	    ;;
+    esac
+done
+
+################################################################################
+## HELPERS
+################################################################################
+
+# makechans CHANNELS, ACHD_CMD
+# create ach channels CHANNELS and start achd ACHD_CMD for each
+function makechans() {
+    for CHAN in $1
+    do
+        ach mk $CHAN -o 666 -1
+	if [[ -z $DO_LOCAL ]]; then $2 $KRANG_ADDRESS $CHAN; fi
+    done
+}
+
+# killachds ACHD_CMD
+# kills all of the achds that we think we made
+function killachds() {
+    pgrep -f "$1 $KRANG_ADDRESS" | xargs -I pids kill -9 pids
+}
+
+# delchans CHANNELS
+# deletes all ach channels in CHANNELS
+function delchans() {
+    for CHAN in $1
+    do
+        ach rm $CHAN
+    done
+}
+
+################################################################################
+## THE ACTUAL SCRIPT
+################################################################################
+
+# create ach channels and run daemons
+if [[ -n $DO_GET ]]; then makechans "$GET_CHANNELS" "$ACHD_CMD_GET"; fi
+if [[ -n $DO_PUT ]]; then makechans "$PUT_CHANNELS" "$ACHD_CMD_PUT"; fi
+
+# take action: if the user specified a command, run that and clean up when
+# done; if not, present a prompt and exit when the user answers it.
+if [[ -n $COMMAND ]]
+then
+    $COMMAND
+else
+    echo "Press enter to clean up."
+    read foo
+fi
+
+# kill all the daemons we created
+if [[ -n $DO_GET ]]; then killachds "$ACHD_CMD_GET"; fi
+if [[ -n $DO_PUT ]]; then killachds "$ACHD_CMD_PUT"; fi
+
+# inform user of result
+if [[ `pgrep "achd"` ]]
+then
+    echo "Achds remain: "
+    pgrep -fl "achd"
+else
+    echo "All achds are dead"
+fi
+
+# clean up after ourselves
+if [[ -n $DO_GET ]]; then delchans "$GET_CHANNELS"; fi
+if [[ -n $DO_PUT ]]; then delchans "$PUT_CHANNELS"; fi

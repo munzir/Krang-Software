@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<!-- @file 03-World-IK.urdf -->
+<!-- @author Can Erdogan -->
+<!-- @date May 13, 2013 -->
+<!-- @brief Contains the definition for the world setup where the green arrow object -->
+<!-- dictates the position and the direction for the end-effector and the red objects are the -->
+<!-- obstacles that the IK should avoid. -->
+ 
+<world name="schunk_with_desktop">
+	
+	<!-- Include the models by including either the complete urdf or referencing the file name -->
+	<include filename="../model/Krang.urdf" model_name="krang"/>
+	<include filename="../objects/redPoint.urdf" model_name="redPoint"/>
+	<include filename="../objects/bluePoint.urdf" model_name="bluePoint"/>
+	<include filename="../objects/wall1.urdf" model_name="wall1"/>
+	<include filename="../objects/wall2.urdf" model_name="wall2"/>
+
+	<entity model="krang" name="Krang"> <origin xyz="1 -2 0.264" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="redPoint" name="PointInput1"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="redPoint" name="PointLeverFulcrum"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="redPoint" name="PointLeverLoad"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="wall1" name="Wall1"> <origin xyz="1.87 0.0 1.03" rpy="0.0 0 -1.5708"/> </entity>  
+	<entity model="wall2" name="Wall2"> <origin xyz="-1.17 0.0 1.03" rpy="0.0 0 -1.5708"/> </entity>  
+
+	<include filename="../objects/door.urdf" model_name="door"/>
+	<entity model="door" name="Load"> <origin xyz="-0.02 -0.06 1.03" rpy="1.5708 0 -1.745"/> </entity>  
+	<include filename="../objects/hundred_real.urdf" model_name="fulcrum"/>
+	<entity model="fulcrum" name="Fulcrum"> <origin xyz="0.8 -0.27 0" rpy="1.5708 0 -1.5708"/> </entity>  
+	<include filename="../objects/stick_real_long.urdf" model_name="lever"/>
+	<entity model="lever" name="Lever"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+</world> 

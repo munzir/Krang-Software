@@ -1,0 +1,2 @@
+This repo contains support programs for krang. Such as 'home' to allow users to home the system 
+on linux, and the init.d/krang file, used for startup etc.

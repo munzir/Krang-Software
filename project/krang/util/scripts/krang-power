@@ -1,0 +1,106 @@
+#!/bin/bash
+
+##################################################
+# useful variables
+message=""
+castvote=
+
+##################################################
+# config stuff
+votedir=/tmp/krang-power-locks
+myvotefile=$votedir/`whoami`
+timestampfile=$votedir/vote-start-time
+voteduration=30
+
+##################################################
+# figure out who's logged in
+users=`who | cut -d " " -f 1 | uniq`
+
+##################################################
+# check to see if there's a vote in progress
+voteinprogress=
+if [[ -e $votedir ]]; then voteinprogress="yes"; fi
+
+##################################################
+# handle leftover timed-out votes
+if [[ -n $voteinprogress ]]
+then
+    votetime=`echo \`date +%s\` - \`cat $timestampfile\` | bc`
+    if [[ $votetime -gt $voteduration ]]
+    then
+        echo "cleaning up old vote"
+        rm -rf $votedir
+        voteinprogress=""
+    fi
+fi
+
+##################################################
+# if there is no vote in progress, start one
+if [[ -z $voteinprogress ]]
+then
+    echo "starting new vote"
+
+    # create directory
+    mkdir $votedir
+    chmod a+rw $votedir
+
+    # create timestamp file
+    date +%s > $timestampfile
+    chmod a+rw $timestampfile
+
+    # create individual users' votes
+    for u in $users
+    do
+        touch $votedir/$u
+        chmod a+rw $votedir/$u
+    done
+    
+    # tell everybody that we're voting
+
+    message=$message"Hey, everybody, do you mind if we shut down Krang for a bit?\n"
+    message=$message"Run krang-power to vote yes, abstain to keep krang alive for a little while longer.\n\n"
+
+    # just to be safe
+    voteinprogress="yes"
+fi
+
+##################################################
+# if there is a vote in progress, which there should be by now, vote!
+if [[ -n $voteinprogress ]]
+then 
+    # cast our vote, if we haven't already
+    if [[ -e $myvotefile ]]; then
+        rm $myvotefile
+        castvote="yes"
+    fi
+    message=$message"$(whoami) has voted to power down krang\n"
+    message=$message"People left to vote:\n"
+
+    numvotesleft=`ls -1 /tmp/krang-power-locks | wc -l`
+    numvotesleft=`echo $numvotesleft - 1 | bc`
+    for u in $users
+    do
+        if [[ -e $votedir/$u ]]; then message=$message"  "$u"\n"; fi
+    done
+    
+    # If we actually voted, tell everybody that we did
+    if [[ -n $castvote ]]; then
+        echo "Using wall to update everybody!"
+        echo -e $message | wall
+    else
+        echo -e $message
+    fi
+
+    # if everybody's voted, do our thing
+    if [[ numvotesleft -eq 0 ]]
+    then
+        echo "Everybody has voted; shutting down in ten seconds" | wall
+        if [[ $1 -eq "shutdown" ]]; then
+            sleep 10
+            sudo shutdown -hP now
+        else
+            sleep 10
+            sudo reboot
+        fi
+    fi
+fi

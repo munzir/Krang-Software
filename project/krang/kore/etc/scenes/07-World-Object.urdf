@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!-- @file 03-World-IK.urdf -->
+<!-- @author Can Erdogan -->
+<!-- @date May 13, 2013 -->
+<!-- @brief Contains the definition for the world setup where the green arrow object -->
+<!-- dictates the position and the direction for the end-effector and the red objects are the -->
+<!-- obstacles that the IK should avoid. -->
+ 
+<world name="schunk_with_desktop">
+	<include filename="../objects/cinder.urdf" model_name="fulcrum"/>
+	<include filename="../objects/bluePoint.urdf" model_name="bluePoint"/>
+	<entity model="fulcrum" name="Fulcrum"> <origin xyz="-1 1 0.0" rpy="1.5708 0 1.5708"/> </entity>  
+	<entity model="bluePoint" name="Point"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+</world> 

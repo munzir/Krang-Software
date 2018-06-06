@@ -1,0 +1,608 @@
+#!/bin/bash
+
+# Kasemsit
+# 04/26/2011
+
+# Neil Dantam
+# 8/2011
+
+# Matthew Dutton - joint limits
+# 10/2011
+
+# Script to start/stop daemons
+
+### CONFIG ###
+
+### PROCESS TO START ###
+# Filename containing Hardware Mode
+HWModeFilename='/tmp/.krangrc'
+GRIPPER_TYPE='Robotiq'
+
+# channel names
+JS_C='joystick-data'
+IMU_C='imu-data'
+AMC_C='amc-cmd'
+AMC_S='amc-state'
+WAIST_C='waist-cmd'
+WAIST_S='waist-state'
+WAISTD_C='waistd-cmd'
+RLWA_C='rlwa-cmd'
+RLWA_S='rlwa-state'
+LLWA_C='llwa-cmd'
+LLWA_S='llwa-state'
+TORSO_C='torso-cmd'
+TORSO_S='torso-state'
+RGRIPPER_C='rgripper-cmd'
+RGRIPPER_S='rgripper-state'
+LGRIPPER_C='lgripper-cmd'
+LGRIPPER_S='lgripper-state'
+RLWA_FT='rlwa_ft'
+LLWA_FT='llwa_ft'
+KRANG_STATE='krang-state'
+
+ACH_MODE=666 # better to use group permissions, but not worth it here
+
+# CAN bus and module id
+CANBUS_LLWA_0=0
+CANBUS_LLWA_1=1
+CANBUS_LFT=$CANBUS_LLWA_1
+CANBUS_LLWA_2=2
+CANBUS_AMC=3
+CANBUS_IMU=$CANBUS_AMC
+
+CANBUS_RLWA_0=8
+CANBUS_RLWA_1=9
+CANBUS_RFT=$CANBUS_RLWA_1
+CANBUS_RLWA_2=10
+CANBUS_TORSO=11
+
+# CAN bus and module id
+IMU_BUS="-b $CANBUS_IMU"
+AMC_BUS="-b $CANBUS_AMC -m 20 -m 21"
+TORSO_BUS="-b $CANBUS_TORSO -m 13"
+RGRIPPER_BUS="-b 10 -m 12"
+ROBOTIQ_RGRIPPER_BUS="-b 10 -m 11"
+LGRIPPER_BUS="-b 2 -m 12"
+ROBOTIQ_LGRIPPER_BUS="-b 2 -m 11"
+
+# joint limits - radians
+ROTATING_JOINT_MIN=-6.50 # 4PI/2, Joint limit for rotational joints
+ROTATING_JOINT_MAX=6.50  # 4PI/2, Joint limit for rotational joints
+BENDING_JOINT_MIN=-2.0944      # 2PI/3, Joint limit for bending joints
+BENDING_JOINT_MAX=2.0944       # 2PI/3, Joint limit for bending joints
+TORSO_MIN=-1.57
+TORSO_MAX=1.57
+WAIST_MIN=0
+WAIST_MAX=2.88
+
+# Set the color for stopping
+STARTCOLOR="\033[1;32m"
+STOPCOLOR="\033[1;31m"
+QUESTIONCOLOR="\033[1;35m"
+NOCOLOR="\033[0;37m"
+
+### FUNCTION DEFINITION ####
+
+# ************************************************************************************************
+ShowUsage()
+{
+	echo "Usage: $0 {start|start-base|start-noarms|stop|restart|status|create|delete}"
+	echo '          start          - start all the daemons for full body'
+	echo '          start-base     - start all the daemons for base only'
+	echo '          start-noarms   - start all the daemons for base and spine'
+	echo '          stop           - stop all the daemons'
+	echo '          restart        - stop and then start all the daemons'
+	echo '          status         - show process command'
+	echo '          create         - create all related ach channels'
+	echo '          delete         - delete all ach channels in /dev/shm'
+}
+
+# ************************************************************************************************
+CreateAllAchChan() {
+	ach -o $ACH_MODE -1 -C $JS_C         -m 10 -n 78 || exit 1
+	ach -o $ACH_MODE -1 -C $IMU_C        -m 10 -n 54 || exit 1
+	ach -o $ACH_MODE -1 -C $AMC_C        -m 10 -n $((8*2  + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $AMC_S        -m 10 -n $((16*2 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $KRANG_STATE  -m 10 -n 4096 || exit 1
+		if [ "$KRANG_HW_MODE" = 'base' ]; then  return;	fi
+		ach -o $ACH_MODE -1 -C $WAIST_C      -m 10 -n $((8*2  + 512)) || exit 1
+		ach -o $ACH_MODE -1 -C $WAIST_S      -m 10 -n $((24*2 + 512)) || exit 1
+		ach -o $ACH_MODE -1 -C $WAISTD_C     -m 10 -n $((4+512)) || exit 1
+		if [ "$KRANG_HW_MODE" = 'noarms' ]; then  return;	fi
+	ach -o $ACH_MODE -1 -C $RLWA_C       -m 10 -n $((8*7  + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $RLWA_S       -m 10 -n $((24*7 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $LLWA_C       -m 10 -n $((8*7  + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $LLWA_S       -m 10 -n $((24*7 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $TORSO_C      -m 10 -n $((8*1  + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $TORSO_S      -m 10 -n $((24*1 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $RGRIPPER_C    -m 10 -n $((8*1 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $RGRIPPER_S    -m 10 -n $((24*1 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $LGRIPPER_C    -m 10 -n $((8*1 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $LGRIPPER_S    -m 10 -n $((24*1 + 512)) || exit 1
+	ach -o $ACH_MODE -1 -C $RLWA_FT      -m 10 -n 4096 || exit 1
+	ach -o $ACH_MODE -1 -C $LLWA_FT      -m 10 -n 4096 || exit 1
+	ach -o $ACH_MODE -1 -C spacenav-data -m 10 -n 128 || exit 1
+}
+
+# ************************************************************************************************
+DeleteAllAchChan()
+{
+	# deleting all ach channels
+	# please don't delete /dev/shm/achshm-bms-data,
+	# since battery daemon needs it.
+	ach -U $JS_C
+	ach -U $IMU_C
+	ach -U $AMC_C
+	ach -U $AMC_S
+	ach -U $KRANG_STATE
+		if [ "$KRANG_HW_MODE" = 'base' ]; then  return;	fi
+	ach -U $WAIST_C
+	ach -U $WAIST_S
+	ach -U $WAISTD_C
+		if [ "$KRANG_HW_MODE" = 'noarms' ]; then  return;	fi
+	ach -U $RLWA_C
+	ach -U $RLWA_S
+	ach -U $LLWA_C
+	ach -U $LLWA_S
+	ach -U $TORSO_C
+	ach -U $TORSO_S
+	ach -U $RGRIPPER_C
+	ach -U $RGRIPPER_S
+	ach -U $LGRIPPER_C
+	ach -U $LGRIPPER_S
+	ach -U $RLWA_FT
+	ach -U $LLWA_FT
+	ach -U spacenav-data
+}
+
+# ************************************************************************************************
+# check_hoks DAEMON NUMHOKS
+# checks the logfile for DAEMON and displays an error if it contains fewer than
+# NUMHOKS HOME_OKs.
+check_hoks ()
+{
+	nhoks=`cat /run/somatic/$1/out | grep -i "STATE_HOME_OK" | wc -l`
+	if [[ $nhoks -lt $2 ]]
+	then
+		echo "daemon $1 failed to produce the required number of HOME_OKs: has $nhoks, needs $2"
+	fi
+	if [[ $nhoks -eq $2 ]]
+	then
+		echo "daemon $1 has all $nhoks HOME_OKs"
+	fi
+	if [[ $nhoks -gt $2 ]]
+	then
+		echo "daemon $1 has too many ($nhoks/$2) HOME_OKs, something smells fishy"
+	fi
+}
+
+# ************************************************************************************************
+# Assuming the last issued command is to create a daemon, checks the result
+check () 
+{
+	rc=$?
+	if [ $rc -eq 0 ]; then
+		echo "Created "$1" daemon successfully."
+	else
+		echo "Failed to create "$1" daemon. Exitting."
+		exit 1
+	fi
+}
+
+# ************************************************************************************************
+# Creates the daemons that talk with the module drivers over CAN and inform our programs with ACH
+StartAllProcess()
+{
+	echo -e $STARTCOLOR "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ STARTING DAEMONS ^^^^^^^^^^^^\
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" $NOCOLOR
+
+	# =========================================================================
+	# Setup the base 
+
+	echo -e $STARTCOLOR "\nStarting joystick, imu, amc and soft e-stop daemons" $NOCOLOR
+
+	# joystick
+	sns -a jachd; result=$?
+	if [ $result -eq 0 ]; then echo "Joystick daemon already alive"
+	else
+		jachd -d -c joystick-data
+		check "joystick"
+	fi
+
+	# Imu
+	sns -a imud; result=$?
+	if [ $result -eq 0 ]; then echo "Imu daemon already alive"
+	else
+	  imud -I imud -d $IMU_BUS -c $IMU_C
+	  check "imu"
+	fi
+
+	# AMC - wheels
+	sns -a amciod; result=$?
+	if [ $result -eq 0 ]; then echo "Amc daemon already alive"
+	else
+	  amciod -d -I amciod $AMC_BUS -c $AMC_C -s $AMC_S -v 
+	  check "amc"
+	fi
+		
+   	# Soft E-Stop. note that start-stop-daemon returns 0 upon success.
+	if [ -e "/var/run/somatic/softestop.pid" ]; then
+		echo "Soft e-stop daemon already alive"
+	else
+		startResult="$(start-stop-daemon --start --user root --chuid root:$root \
+		    --pidfile /var/run/somatic/softestop.pid --background --make-pidfile \
+			--exec /usr/bin/krang-softestop -- $AMC_BUS -d /dev/input/js0)"
+		if [ $startResult ]; then
+			echo "Could not start soft-estop. Exitting for safety"
+		fi			
+	fi
+	
+	# If hardware consists of base only, return here
+	if [ "$KRANG_HW_MODE" = 'base' ]; then  return;	fi
+
+	# =========================================================================
+	# Setup the waist and the torso modules
+
+	echo -e $STARTCOLOR "\nStarting waist, krang-waist and torso daemons" $NOCOLOR
+
+	# For pcio-waist to get commands from the krang-waist daemon
+	sns -a pciod-waist; result=$?
+	if [ $result -eq 0 ]; then echo "pciod-waist daemon already alive"
+	else
+		pciod -S param_min_fpos -b $CANBUS_TORSO -m 15 -x -$WAIST_MAX
+		pciod -S param_max_fpos -b $CANBUS_TORSO -m 15 -x -$WAIST_MIN
+		pciod_rs232_kludge -d -I pciod-waist -c $WAIST_C -s $WAIST_S -b $CANBUS_TORSO -m 15 -v -v
+		check "pciod-waist"
+		check_hoks "pciod-waist" 1
+	fi
+ 
+  # The krang-waist daemon
+  if [ -e "/var/run/somatic/krang-waist.pid" ]; then
+  	echo "krang-waist daemon already alive"
+  else
+  	start-stop-daemon --start --user root --chuid root:$root \
+      --pidfile /var/run/somatic/krang-waist.pid --background --make-pidfile \
+      --exec /usr/local/bin/krang-waist -- -c waist-cmd -s waist-state -d waistd-cmd
+  	check "krang-waist"
+  fi
+
+	# The torso module
+	#pciod -S param_min_fpos $TORSO_BUS -x $TORSO_MIN
+	#pciod -S param_max_fpos $TORSO_BUS -x $TORSO_MAX
+	#pciod -d -I pciod-torso $TORSO_BUS -c $TORSO_C -s $TORSO_S -v -v
+
+	# If hardware doesn't have the arms, return here
+	if [ "$KRANG_HW_MODE" = 'noarms' ]; then  return;	fi
+
+	# =========================================================================
+	# Setup the arms and the f/t sensors
+
+	echo -e $STARTCOLOR "\nStarting left/right arm and f/t daemons" $NOCOLOR
+
+	# Right arm: setting up for pciod-rlwa daemon
+	sns -a pciod-rlwa; result=$?
+	if [ $result -eq 0 ]; then echo "pciod-rlwa daemon already alive"
+	else
+
+		# Print the states to check for HOK. TODO: This should be done in pciod automatically
+		#echo ""
+		#pciod -Q state -b $CANBUS_RLWA_0 -m 4 -m 5 -m 6 -m 7
+		#pciod -Q state -b $CANBUS_RLWA_1 -m 8 -m 9 -m 10
+
+		pciod -S param_min_fpos \
+			-b $CANBUS_RLWA_0 -m 4 -x $ROTATING_JOINT_MIN -m 6 -x $ROTATING_JOINT_MIN \
+			-b $CANBUS_RLWA_0 -m 5 -x $BENDING_JOINT_MIN -m 7 -x $BENDING_JOINT_MIN \
+			-b $CANBUS_RLWA_1 -m 8 -x $ROTATING_JOINT_MIN -m 10 -x $ROTATING_JOINT_MIN \
+			-b $CANBUS_RLWA_1 -m 9 -x $BENDING_JOINT_MIN
+		pciod -S param_max_fpos \
+			-b $CANBUS_RLWA_0 -m 4 -x $ROTATING_JOINT_MAX -m 6 -x $ROTATING_JOINT_MAX \
+			-b $CANBUS_RLWA_0 -m 5 -x $BENDING_JOINT_MAX -m 7 -x $BENDING_JOINT_MAX \
+			-b $CANBUS_RLWA_1 -m 8 -x $ROTATING_JOINT_MAX -m 10 -x $ROTATING_JOINT_MAX \
+			-b $CANBUS_RLWA_1 -m 9 -x $BENDING_JOINT_MAX
+
+		# The daemon call for right arm
+		pciod -d -I pciod-rlwa -c $RLWA_C -s $RLWA_S \
+			-b $CANBUS_RLWA_0 -m 4 -m 5 -m 6 -m 7 -b $CANBUS_RLWA_1 -m 8 -m 9 -m 10 -v -v
+		check "pciod-rlwa"
+		check_hoks "pciod-rlwa" 7
+	fi
+
+	# Left arm: setting up for pciod-llwa daemon
+	sns -a pciod-llwa; result=$?
+	if [ $result -eq 0 ]; then echo "pciod-llwa daemon already alive"
+	else
+
+		# Print the states to check for HOK. TODO: This should be done in pciod automatically
+		#pciod -Q state -b $CANBUS_LLWA_0 -m 4 -m 5 -m 6 -m 7
+		#pciod -Q state -b $CANBUS_LLWA_1 -m 8 -m 9 -m 10
+
+		pciod -S param_min_fpos \
+			-b $CANBUS_LLWA_0 -m 4 -x $ROTATING_JOINT_MIN -m 6 -x $ROTATING_JOINT_MIN \
+			-b $CANBUS_LLWA_0 -m 5 -x $BENDING_JOINT_MIN -m 7 -x $BENDING_JOINT_MIN \
+			-b $CANBUS_LLWA_1 -m 8 -x $ROTATING_JOINT_MIN -m 10 -x $ROTATING_JOINT_MIN \
+			-b $CANBUS_LLWA_1 -m 9 -x $BENDING_JOINT_MIN 
+		pciod -S param_max_fpos \
+			-b $CANBUS_LLWA_0 -m 4 -x $ROTATING_JOINT_MAX -m 6 -x $ROTATING_JOINT_MAX \
+			-b $CANBUS_LLWA_0 -m 5 -x $BENDING_JOINT_MAX -m 7 -x $BENDING_JOINT_MAX \
+			-b $CANBUS_LLWA_1 -m 8 -x $ROTATING_JOINT_MAX -m 10 -x $ROTATING_JOINT_MAX \
+			-b $CANBUS_LLWA_1 -m 9 -x $BENDING_JOINT_MAX
+
+		# The daemon call for left arm
+		pciod -d -I pciod-llwa -c $LLWA_C -s $LLWA_S \
+			-b $CANBUS_LLWA_0 -m 4 -m 5 -m 6 -m 7 -b $CANBUS_LLWA_1 -m 8 -m 9 -m 10 -v -v
+		check "pciod-llwa"
+		check_hoks "pciod-llwa" 7
+	fi
+
+	# The right force torque sensor
+	sns -a rft; result=$?
+	if [ $result -eq 0 ]; then echo "rft daemon already alive"
+	else
+		netcanftd -d -I rft -b $CANBUS_RFT -B 1000 -c rlwa_ft -r -f 100
+		check "rft"
+	fi
+
+	# The left force torque sensor
+	sns -a lft; result=$?
+	if [ $result -eq 0 ]; then echo "lft daemon already alive"
+	else
+		netcanftd -d -I lft -b $CANBUS_LFT -B 1000 -c llwa_ft -r -f 100
+		check "lft"
+	fi
+   
+	# If hardware doesn't have the arms, return here
+	if [ "$KRANG_HW_MODE" = 'nogrippers' ]; then  return;	fi
+
+	# =========================================================================
+	# Setup the Schunk grippers if available
+
+	if [ "$GRIPPER_TYPE" = 'Schunk' ]; then
+		echo -e $STARTCOLOR "\nStarting Schunk gripper daemons" $NOCOLOR
+	
+		# Right gripper
+		sns -a pciod-rgripper; result=$?
+		if [ $result -eq 0 ]; then echo "pciod-rgripper daemon already alive"
+		else
+			pciod -d -I pciod-rgripper -c $RGRIPPER_C -s $RGRIPPER_S $RGRIPPER_BUS -H
+			check "pciod-rgripper"
+			check_hoks "pciod-rgripper" 1
+		fi
+	
+		# Left gripper
+		sns -a pciod-lgripper; result=$?
+		if [ $result -eq 0 ]; then echo "pciod-lgripper daemon already alive"
+		else
+			pciod -d -I pciod-lgripper -c $LGRIPPER_C -s $LGRIPPER_S $LGRIPPER_BUS -H
+			check "pciod-lgripper"
+			check_hoks "pciod-lgripper" 1
+		fi
+	
+
+	# =========================================================================
+	# Setup the Robotiq grippers if available
+
+	else 
+
+		echo -e $STARTCOLOR "\nStarting Robotiq gripper daemons" $NOCOLOR
+
+		# Right gripper
+		sns -a robotiq-rgripper; result=$?
+		if [ $result -eq 0 ]; then echo "robotiq-rgripper daemon already alive"
+		else
+			robotiqd -d -I robotiq-rgripper -c $RGRIPPER_C -s $RGRIPPER_S $ROBOTIQ_RGRIPPER_BUS -t
+			check "robotiq-rgripper"
+			sleep 2
+			echo 0 0 0 128 | somatic_motor_cmd rgripper pos >/dev/null
+			echo ff ff ff ff | somatic_motor_cmd rgripper vel >/dev/null
+			echo ff ff ff ff | somatic_motor_cmd rgripper cur >/dev/null
+			rm -rf /var/run/somatic/somatic_motor_cmd/
+		fi
+
+		## Left gripper
+		#sns -a robotiq-lgripper; result=$?
+		#if [ $result -eq 0 ]; then echo "robotiq-lgripper daemon already alive"
+		#else
+			#robotiqd -d -I robotiq-lgripper -c $LGRIPPER_C -s $LGRIPPER_S $ROBOTIQ_LGRIPPER_BUS -t
+			#check "robotiq-lgripper"
+			#sleep 2
+			#echo 0 0 0 128 | somatic_motor_cmd lgripper pos >/dev/null
+			#echo ff ff ff ff | somatic_motor_cmd lgripper vel >/dev/null
+			#echo ff ff ff ff | somatic_motor_cmd lgripper cur >/dev/null
+			#rm -rf /var/run/somatic/somatic_motor_cmd/
+		#fi
+	fi
+
+	echo -e $STARTCOLOR "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ START COMPLETE ^^^^^^^^^^^^^^^^^^\
+^^^^^^^^^^^^^^^^^^^^^^^^^" $NOCOLOR
+}
+
+# ************************************************************************************************
+# Stops all the daemons and deletes their resource folders in /var/run/somatic.
+StopAllProcess()
+{
+
+	echo -e $STOPCOLOR "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ STOPPING DAEMONS ^^^^^^^^^^^^\
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" $NOCOLOR
+
+	# =========================================================================
+	# Clean up until the base
+
+	echo -e $STOPCOLOR "\nSending SIGTERM to joystick, imu and amc daemons" $NOCOLOR
+	sns -k jachd
+	sns -k imud
+	sns -k amciod
+
+	echo -e $STOPCOLOR "\nUsing start-stop-daemon to stop the softestop daemon" $NOCOLOR
+	start-stop-daemon --stop --user root --pidfile /var/run/somatic/softestop.pid
+	rm -rf /var/run/somatic/softestop.pid
+
+	if [ "$KRANG_HW_MODE" = 'base' ]; then  return;	fi
+
+	# =========================================================================
+	# Clean up the waist
+
+	echo -e $STOPCOLOR "\nUsing start-stop-daemon to stop the krang-waist daemon" $NOCOLOR
+	start-stop-daemon --stop --user root --pidfile /var/run/somatic/krang-waist.pid
+	rm -rf /var/run/somatic/krang-waist.pid
+	
+	echo -e $STOPCOLOR "\nSending SIGTERM to pciod-waist daemon" $NOCOLOR
+	sns -k pciod-waist
+	
+	if [ "$KRANG_HW_MODE" = 'noarms' ]; then  return;	fi
+
+	# =========================================================================
+	# Clean up the arms
+
+	echo -e $STOPCOLOR "\nSending SIGTERM to pciod daemons" $NOCOLOR
+	sns -k pciod-torso
+	sns -k pciod-rlwa
+	sns -k pciod-llwa
+
+	echo -e $STOPCOLOR "\nSending SIGTERM to f/t daemons" $NOCOLOR
+	sns -k rft
+	sns -k lft
+
+	if [ "$KRANG_HW_MODE" = 'nogrippers' ]; then  return;	fi
+
+	# =========================================================================
+	# Clean up the grippers (both pciod and robotiq)
+
+	echo -e $STOPCOLOR "\nSending SIGTERM to gripper daemons" $NOCOLOR
+	if [ "$GRIPPER_TYPE" = 'Schunk' ]; then
+		sns -k pciod-rgripper
+		sns -k pciod-lgripper
+	else
+		sns -k robotiq-rgripper
+		sns -k robotiq-lgripper
+	fi
+
+	echo -e $STOPCOLOR "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ STOP COMPLETE ^^^^^^^^^^^^^^^^^^\
+^^^^^^^^^^^^^^^^^^^^^^^^^\n" $NOCOLOR
+}
+
+
+isalive() {
+	sns -a "$1"
+	if [ 0 -eq "$?"  ]; then
+	    echo $1 alive
+	else
+	    echo $1 NOT ALIVE
+	    exit 1;
+	fi
+}
+
+PrintInfo () {
+	isalive slogd
+	isalive amciod
+	isalive pciod-torso
+	isalive pciod-rlwa
+	isalive pciod-llwa
+	isalive pciod-waist
+	isalive jachd
+	isalive imud
+	isalive rft
+	isalive lft
+}
+
+EchoHWMode () {
+	case "$KRANG_HW_MODE" in
+		"base" )
+			echo -n "Base-only mode: Only joystick, wheels and imu assumed connected."
+		;;
+		"noarms" )
+			echo -n "No-arms mode: Only joystick, wheels, imu and waist assumed connected."
+		;;
+		"full" )
+			echo -n "Full-body mode: All devices assumed connected."
+		;;
+	esac
+		echo " To change mode start krang service again."
+}
+
+ReadHWMode () {
+		if [ -f $HWModeFilename ]
+		then
+			read KRANG_HW_MODE < $HWModeFilename
+		else
+			echo "$HWModeFilename doesn't exist. Can't determine hardware mode. Assuming full hardware."
+			KRANG_HW_MODE="full"
+		fi
+		EchoHWMode
+}
+
+###########################
+#          MAIN           #
+###########################
+
+case "$1" in
+# Stop all processes
+	'stop' )
+				ReadHWMode
+	    StopAllProcess
+	    ;;
+
+# Start all process
+	'start-base' )
+	    echo ' '
+				KRANG_HW_MODE="base"
+				echo $KRANG_HW_MODE > $HWModeFilename
+				EchoHWMode
+	    CreateAllAchChan
+	    StartAllProcess
+	    echo ' '
+				;;
+
+	'start-noarms' )
+	    echo ' '
+				KRANG_HW_MODE="noarms"
+				echo $KRANG_HW_MODE > $HWModeFilename
+				EchoHWMode
+	    CreateAllAchChan
+	    StartAllProcess
+	    echo ' '
+				;;
+
+	'start' )
+	    echo ' '
+				KRANG_HW_MODE="full"
+				echo $KRANG_HW_MODE > $HWModeFilename
+				EchoHWMode
+	    CreateAllAchChan
+	    StartAllProcess
+	    echo ' '
+				;;
+
+# Stop and then start all processes
+	'restart' )
+	    echo ' '
+				ReadHWMode
+	    StopAllProcess
+	    StartAllProcess
+	    echo ' '
+	    ;;
+
+	'status' )
+	    PrintInfo
+	    ;;
+# Create all ach channels
+	'create' )
+				ReadHWMode
+	    CreateAllAchChan
+	    ;;
+# Delete all channels
+	'delete' )
+				ReadHWMode
+	    DeleteAllAchChan
+	    ;;
+
+# HELP please
+	*)
+	    ShowUsage
+	    exit 1
+	    ;;
+esac
+
+exit 0
+
+
+#eof

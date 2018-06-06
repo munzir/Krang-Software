@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<!-- @file 03-World-IK.urdf -->
+<!-- @author Can Erdogan -->
+<!-- @date May 13, 2013 -->
+<!-- @brief Contains the definition for the world setup where the green arrow object -->
+<!-- dictates the position and the direction for the end-effector and the red objects are the -->
+<!-- obstacles that the IK should avoid. -->
+ 
+<world name="schunk_with_desktop">
+	
+	<!-- Include the models by including either the complete urdf or referencing the file name -->
+	<include filename="../model/KrangSchunk.urdf" model_name="krang"/>
+	<include filename="../objects/plate.urdf" model_name="plate"/>
+	<entity model="krang" name="Krang"> <origin xyz="1 -2 0.264" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="plate" name="Plate1"> <origin xyz="0.0 0.0 1.03" rpy="0.0 0 -1.5708"/> </entity>  
+	<entity model="plate" name="Plate2"> <origin xyz="0.0 0.0 1.03" rpy="0.0 0 -1.5708"/> </entity>  
+	<entity model="plate" name="Plate3"> <origin xyz="0.0 0.0 1.03" rpy="0.0 0 -1.5708"/> </entity>  
+
+
+	<include filename="../objects/redPoint.urdf" model_name="bP"/>
+	<include filename="../objects/bluePoint.urdf" model_name="gP"/>
+	<entity model="gP" name="A0"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bP" name="A1"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="gP" name="B0"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bP" name="B1"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="gP" name="C0"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bP" name="C1"> <origin xyz="0 0.0 5.33" rpy="1.5708 0 -1.5708"/> </entity>  
+</world> 

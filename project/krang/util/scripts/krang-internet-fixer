@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# constants
+HOSTSTOCHECK="motherbrain"
+WINDOWLEN=3
+
+# variables
+starttime=`date +%s`
+windowidx=1
+windowsum=""
+window=
+for (( i=1; i<=$WINDOWLEN; i++ )); do window[i]="1"; done
+
+# workhorse function - checks to see if the internet is up by pinging hosts
+function is-internet-up () {
+    good="yes"
+    for host in $HOSTSTOCHECK; do
+        if ! ping -w5 -c3 -i0.2 $host >/dev/null 2>&1; then
+            good=
+        fi
+    done
+    if [[ -n $good ]]; then return 0; else return 1; fi
+}
+
+
+while true ; do
+    if is-internet-up; then
+        window[windowidx]="1"
+    else
+        window[windowidx]="0"
+    fi
+    windowidx=`echo "($windowidx % $WINDOWLEN) + 1" | bc`
+
+    windowsum=""
+    for (( i=1; i<=$WINDOWLEN; i++ )); do windowsum=$windowsum"${window[$i]}+"; done
+    windowsum=$windowsum"0"
+    
+    filtered=`echo -e $windowsum | bc`
+    if [[ filtered -eq 0 ]]; then
+        echo "internet seems dead, restarting dhclient"
+        dhclient -x
+        dhclient wlan0
+        echo "krang-internet-fixer just decided that the internet was dead and restarted it." | wall
+    fi
+done

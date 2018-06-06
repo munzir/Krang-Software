@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!-- @file 03-World-IK.urdf -->
+<!-- @author Can Erdogan -->
+<!-- @date May 13, 2013 -->
+<!-- @brief Contains the definition for the world setup where the green arrow object -->
+<!-- dictates the position and the direction for the end-effector and the red objects are the -->
+<!-- obstacles that the IK should avoid. -->
+ 
+<world name="schunk_with_desktop">
+	
+	<include filename="../objects/redPoint.urdf" model_name="redPoint"/>
+	<include filename="../objects/bluePoint.urdf" model_name="bluePoint"/>
+	<include filename="../objects/stick_real_short.urdf" model_name="lever"/>
+
+	<entity model="redPoint" name="Point1"> <origin xyz="1.12 -0.15 0.605" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="bluePoint" name="Point2"> <origin xyz="1.07 -0.27 0.56" rpy="1.5708 0 -1.5708"/> </entity>  
+	<entity model="lever" name="Lever"> <origin xyz="1.2 -0.8 0.33" rpy="-1.2 0 0.2"/> </entity>  
+
+</world> 

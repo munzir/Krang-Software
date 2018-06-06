@@ -1,0 +1,34 @@
+#! /bin/sh
+# @file /etc/init.d/getNetworkFromMain
+# @author Can Erdogan
+# @date Apr 23, 2013
+# @brief This script is an ad-hoc attempt to setup the network configuration
+# of Krang's vision computer to connect to the main computer. It simply
+# changes the static ip of the ethernet port and sets the nameserver.
+
+case "$1" in
+  start)
+
+    echo "Configuring the network to talk with the vision computer"
+    
+    # Set the eth0 to static ip address
+    ifdown eth0
+    ifconfig eth0 192.168.10.10 netmask 255.255.255.0
+
+    # Set the gateway
+    route add default gw 192.168.10.1
+
+    # Set the nameserver
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    ;;
+
+  stop)
+    ;;
+  *)
+    echo "Usage: /etc/init.d/shareNetworkWithVision {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+    

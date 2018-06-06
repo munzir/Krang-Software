@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.69.0 r60995</authoring_tool>
+    </contributor>
+    <created>2014-03-10T10:49:03</created>
+    <modified>2014-03-10T10:49:03</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images/>
+  <library_effects>
+    <effect id="Material_001-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.2870721 0.1455618 0.02779679 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.1369155 0.09619192 0.01978246 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">50</float>
+            </shininess>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+        <extra>
+          <technique profile="GOOGLEEARTH">
+            <double_sided>1</double_sided>
+          </technique>
+        </extra>
+      </profile_COMMON>
+      <extra><technique profile="MAX3D"><double_sided>1</double_sided></technique></extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Material_001-material" name="Material_001">
+      <instance_effect url="#Material_001-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="plate-mesh" name="plate">
+      <mesh>
+        <source id="plate-mesh-positions">
+          <float_array id="plate-mesh-positions-array" count="30">0 12.7 609.6 0 12.7 0 0 0 609.6 0 0 0 1219.2 12.7 609.6 1219.2 0 609.6 0 0 609.6 1219.2 12.7 0 1219.2 0 0 1219.2 0 609.6</float_array>
+          <technique_common>
+            <accessor source="#plate-mesh-positions-array" count="10" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate-mesh-normals">
+          <float_array id="plate-mesh-normals-array" count="36">-1 0 0 -1 0 0 0 0 1 0 0 1 1 0 0 1 0 0 0 0 -1 0 0 -1 0 1 0 0 1 0 0 -1 0 0 -1 0</float_array>
+          <technique_common>
+            <accessor source="#plate-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate-mesh-vertices">
+          <input semantic="POSITION" source="#plate-mesh-positions"/>
+        </vertices>
+        <polylist material="Material_001-material" count="12">
+          <input semantic="VERTEX" source="#plate-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#plate-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 1 0 2 0 2 1 1 1 3 1 4 2 0 2 5 2 5 3 0 3 6 3 7 4 4 4 8 4 8 5 4 5 9 5 1 6 7 6 3 6 3 7 7 7 8 7 4 8 7 8 0 8 0 9 7 9 1 9 8 10 9 10 3 10 3 11 9 11 2 11</p>
+        </polylist>
+      </mesh>
+      <extra><technique profile="MAYA"><double_sided>1</double_sided></technique></extra>
+    </geometry>
+  </library_geometries>
+  <library_controllers/>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="plate" name="plate" type="NODE">
+        <matrix sid="transform">10e-4 0 0 0 0 0.001 0 0 0 0 10e-4 0 0 0 0 1</matrix>
+        <instance_geometry url="#plate-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_001-material" target="#Material_001-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
