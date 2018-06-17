@@ -508,18 +508,18 @@ void run () {
 
 					// Extract Wheel Parameters
 					if(node_name.find("Wheel") != string::npos){
-					  m_w = n->getMass();
-					  n->getMomentOfInertia(Iw_xx,Iw_yy,Iw_zz,Iw_xy,Iw_xz,Iw_yz);
-					  I_wa = Iw_xx;
-					  r_w = 0.25;
+						m_w = n->getMass();
+						n->getMomentOfInertia(Iw_xx,Iw_yy,Iw_zz,Iw_xy,Iw_xz,Iw_yz);
+						I_wa = Iw_xx;
+						r_w = 0.25;
 					}
 
 					// Extract Body Parameters
 					if(node_name.find("Base") != string::npos){
-					  M_g = n->getMass();
-					  n->getMomentOfInertia(I_xx,I_yy,I_zz,I_xy,I_xz,I_yz);
-					  Eigen::Vector3d com = n->getLocalCOM();
-					  l_g = com[1];
+						M_g = n->getMass();
+						n->getMomentOfInertia(I_xx,I_yy,I_zz,I_xy,I_xz,I_yz);
+						Eigen::Vector3d com = n->getLocalCOM();
+						l_g = com[1];
 					}
 				}
 
@@ -577,38 +577,39 @@ void run () {
 
 				// Calculate controls
 				Eigen::VectorXd ut1(2); ut1 << F[1], F[3];
-			    Eigen::VectorXd ut2(2); ut2 << x_obs_wheel[0], x_obs_wheel[1];
+				Eigen::VectorXd ut2(2); ut2 << x_obs_wheel[0], x_obs_wheel[1];
 
-			    Eigen::VectorXd up1(2); up1 << F[0], F[2];
-			    Eigen::VectorXd up2(2); up2 << x_obs_com[0], x_obs_com[1];
+				Eigen::VectorXd up1(2); up1 << F[0], F[2];
+				Eigen::VectorXd up2(2); up2 << x_obs_com[0], x_obs_com[1];
 
 				// u_theta = F[1]*x_obs_wheel[0] + F[3]*x_obs_wheel[1];
 				// u_com = F[0]*x_obs_com[0] + F[2]*x_obs_com[1];
 				u_theta = -ut1.transpose()*ut2;
-      			u_com = -up1.transpose()*up2;
+				u_com = -up1.transpose()*up2;
 
-      			//Torque to be applied to motors
-      			double tau = u_theta + u_com - x_obs_com[2] - x_obs_wheel[2];
+				//Torque to be applied to motors
+				double tau = u_theta + u_com - x_obs_com[2] - x_obs_wheel[2];
 
-      			// Update osbservers
+				// Update osbservers
 
-      			x_dot_wheel = A_*x_obs_wheel + L_1*(x_sys[2] - x_obs_wheel[0]) + B_1*u_theta;
-			    x_dot_com   = A_*x_obs_com   + L_2*(x_sys[0] - x_obs_com[0])   + B_2*u_com;
-			    x_dot << x_dot_wheel, x_dot_com;
-			    x_obs = x_obs + x_dot*dt;
+				x_dot_wheel = A_*x_obs_wheel + L_1*(x_sys[2] - x_obs_wheel[0]) + B_1*u_theta;
+				x_dot_com   = A_*x_obs_com   + L_2*(x_sys[0] - x_obs_com[0])   + B_2*u_com;
+				x_dot << x_dot_wheel, x_dot_com;
+				x_obs = x_obs + x_dot*dt;
 
-			    // Save x_obs values for next iteration
-			    theta_hat = x_obs[0];
-			    theta_dot_hat = x_obs[1];
-			    f_theta = x_obs[2];
+				// Save x_obs values for next iteration
+				theta_hat = x_obs[0];
+				theta_dot_hat = x_obs[1];
+				f_theta = x_obs[2];
 
-			    psi_hat = x_obs[3];
-			    psi_dot_hat = x_obs[4];
-			    f_psi = x_obs[5];
+				psi_hat = x_obs[3];
+				psi_dot_hat = x_obs[4];
+				f_psi = x_obs[5];
 
-			    //Change torques to current for motor input
-			    double motor_constant = 0.85; //Nm/A
-			    double input [2] = {tau/(2*motor_constant), tau/(2*motor_constant)};
+				// Change torques to current for motor input
+				// TODO: Verify this is correct ratio and move to top of .cpp
+				double motor_constant = 0.85; //Nm/A
+				double input [2] = {tau/(2*motor_constant), tau/(2*motor_constant)};
 
 			}
 			// Don't attempt disturbance rejection outside of balancing modes
@@ -639,7 +640,7 @@ void run () {
 		input[1] = max(-49.0, min(49.0, input[1]));
 		if(debug) printf("u_theta: %lf, u_x: %lf, u_spin: %lf\n", u_theta, u_x, u_spin);
 		lastUleft = input[0], lastUright = input[1];
-		
+
 		// Set the motor velocities
 		if(start) {
 			if(debug) cout << "Started..." << endl;
@@ -788,12 +789,12 @@ void init() {
 	pthread_create(&kbhitThread, NULL, &kbhit, NULL);
 	// TODO: use getSimple here to initialize the observer values
 	theta_hat = 0;
-    theta_dot_hat = 0;
-    f_theta = 1;
+	theta_dot_hat = 0;
+	f_theta = 1;
 
-    psi_hat = 0;
-    psi_dot_hat = 0;
-    f_psi = 1;
+	psi_hat = 0;
+	psi_dot_hat = 0;
+	f_psi = 1;
 }
 
 /* ******************************************************************************************** */
