@@ -14,7 +14,7 @@ using namespace dynamics;
 using namespace Krang;
 
 //For disturbance rejection purposes
-double theta_hat, theta_dot_hat, f_theta, psi_hat, psi_dot_hat, f_psi;
+double theta_hat, theta_dot_hat, f_theta, com_hat, com_dot_hat, f_com;
 
 /* ******************************************************************************************** */
 // For logging purposes
@@ -569,9 +569,9 @@ void run () {
 				L_1 << 1159.99999999673,173438.396407957,1343839.4084839;
 				L_2 = L_1;
 				// TODO: fill in psi and thetas with proper values from state
-				x_sys << psi, psi_dot, theta, theta_dot;
+				x_sys << com, com_dot, theta, theta_dot;
 				//create observer states
-				x_obs_com << psi_hat, psi_dot_hat, f_psi;
+				x_obs_com << com_hat, com_dot_hat, f_com;
 				x_obs_wheel << theta_hat, theta_dot_hat, f_theta;
 				x_obs << x_obs_wheel, x_obs_com;
 
@@ -602,9 +602,9 @@ void run () {
 				theta_dot_hat = x_obs[1];
 				f_theta = x_obs[2];
 
-				psi_hat = x_obs[3];
-				psi_dot_hat = x_obs[4];
-				f_psi = x_obs[5];
+				com_hat = x_obs[3];
+				com_dot_hat = x_obs[4];
+				f_com = x_obs[5];
 
 				// Change torques to current for motor input
 				// TODO: Verify this is correct ratio and move to top of .cpp
@@ -792,9 +792,9 @@ void init() {
 	theta_dot_hat = 0;
 	f_theta = 1;
 
-	psi_hat = 0;
-	psi_dot_hat = 0;
-	f_psi = 1;
+	com_hat = 0;
+	com_dot_hat = 0;
+	f_com = 1;
 }
 
 /* ******************************************************************************************** */
