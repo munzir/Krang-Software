@@ -278,6 +278,10 @@ void *kbhit(void *) {
 			K = K_groundHi;
 			MODE = 6;
 		}
+		else if(input=='d') {
+			disturb_reject = !disturb_reject;
+			printf("Mode: disturbance rejection %s\n", disturb_reject ? "ON" : "OFF");
+		}
 
 
 	}
