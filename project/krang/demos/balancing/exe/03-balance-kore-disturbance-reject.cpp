@@ -476,6 +476,33 @@ void run () {
 			// only turn on if in a balancing mode
 			if (MODE == 4 || MODE == 5) {
 				// TODO: robot is skeleton_ptr, we need current q to calculate getSimple
+				Eigen::Matrix<double, 18, 1> q;
+
+				// Ask MUNZIR how to get q angles
+
+				// // Extract Joint Angles from Full Model
+				// std::vector< BodyNode * > nodes = robot->getBodyNodes();
+				// for(auto const& n: nodes) {
+				// 	std::string node_name = n->getName();
+
+				// 	// Extract Wheel Parameters
+				// 	if(node_name.find("Wheel") != string::npos){
+				// 		m_w = n->getMass();
+				// 		n->getMomentOfInertia(Iw_xx,Iw_yy,Iw_zz,Iw_xy,Iw_xz,Iw_yz);
+				// 		I_wa = Iw_xx;
+				// 		r_w = 0.25;
+				// 	}
+
+				// 	// Extract Body Parameters
+				// 	if(node_name.find("Base") != string::npos){
+				// 		M_g = n->getMass();
+				// 		n->getMomentOfInertia(I_xx,I_yy,I_zz,I_xy,I_xz,I_yz);
+				// 		Eigen::Vector3d com = n->getLocalCOM();
+				// 		l_g = com[1];
+				// 	}
+				// }
+
+
 				// getSimple(robot,q);
 				// after getSimple() is called, we need A,B matrices for LQR
 				// Wheeled Inverted Pendulum Parameters
@@ -502,8 +529,9 @@ void run () {
 				Eigen::VectorXd x_obs_wheel(3);
 				Eigen::VectorXd x_obs_com(3); 
 
-				std::vector< BodyNode * > nodes = robot->getBodyNodes();
-				for(auto const& n: nodes) {
+				// Extract Parameters from Simple Model
+				std::vector< BodyNode * > nodesSimple = m3DOF->getBodyNodes();
+				for(auto const& n: nodesSimple) {
 					std::string node_name = n->getName();
 
 					// Extract Wheel Parameters
@@ -762,7 +790,23 @@ void getSimple(SkeletonPtr threeDOF, Eigen::Matrix<double, 18, 1> q)
 				(-t(0)*t(2)),          (-t(1)*t(2)),          (t(0)*t(0)+t(1)*t(1));
 		iMat = iMat + m*tMat; // Parallel Axis Theorem
 		iBody += iMat;
+
+	// Aligning threeDOF base frame to have the y-axis pass through the CoM
+	double th = atan2(bodyCOM(2), bodyCOM(1));
+	rot << 1, 0, 0,
+	     0, cos(th), sin(th),
+	     0, -sin(th), cos(th);
+	bodyCOM = rot*bodyCOM;
+	iBody = rot*iBody*rot.transpose();
+
+
+	// Print them out
+	cout << "mass: " << mBody << endl;
+	cout << "COM: " << bodyCOM(0) << ", " << bodyCOM(1) << ", " << bodyCOM(2) << endl;
+	cout << "ixx: " << iBody(0,0) << ", iyy: " << iBody(1,1) << ", izz: " << iBody(2,2) << endl;
+	cout << "ixy: " << iBody(0,1) << ", ixz: " << iBody(0,2) << ", iyz: " << iBody(1,2) << endl;
 }
+
 
 /* ******************************************************************************************** */
 /// Initialize the motor and daemons
