@@ -8,6 +8,7 @@
 
 #include "helpers.h"
 #include "kore/display.hpp"
+#include "lqr.h"
 
 using namespace std;
 using namespace dynamics;
@@ -578,6 +579,14 @@ void run () {
 					 c2/delta;
 				// TODO: Caclulate K using LQR here. Need a Q and R matrix as well
 				Eigen::VectorXd F(4);
+				Eigen::Matrix<double,4,1> N;
+				N << 0,0,0,0;
+				if (compGainMatrix(A, B, Q, R, N, F)) {
+					printf("Couldn't Calculate F\n");
+				} else{
+					cout << endl << "F values: " << F << endl << endl;
+				}
+
 				// F = lqr(A,B,Q,R);
 				F << -510.449550243191,  -0.244948974282393,  -110.528023245082, -1.14116859943037;
 				// Observer Dynamics
