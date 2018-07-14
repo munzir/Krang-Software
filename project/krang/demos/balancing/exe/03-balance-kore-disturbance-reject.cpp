@@ -5,7 +5,9 @@
  * @brief This code implements the balancing with force-compensations along with basic joystick 
  * control mainly for the demo on July 31st, 2013 using the newly developed kore library.
  */
-
+// #include <dart/dart.hpp>
+// #include <dart/gui/gui.hpp>
+// #include <dart/utils/urdf/urdf.hpp>
 #include "helpers.h"
 #include "kore/display.hpp"
 #include "lqr.h"
@@ -299,6 +301,24 @@ void run () {
 	Vector6d externalWrench;
 	Vector3d com;
 	
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Observer Initialization
+    ///////////////////////////////////////////////////////////////////////////
+    t_now = aa_tm_now();                        
+    double dt = (double)aa_tm_timespec2sec(aa_tm_sub(t_now, t_prev));   
+    getState(state, dt, &com);
+
+    theta_hat = state(2);
+    theta_dot_hat = 0.0; //state(3);
+    f_theta = 0.0;
+
+    com_hat = state(0);
+    com_dot_hat = 0.0; //state(1);
+    f_com = 0.0;
+    ///////////////////////////////////////////////////////////////////////////
+
+
 	// Initialize the running history
 	const size_t historySize = 60;
 	vector <double> torqueHistory;
@@ -473,6 +493,7 @@ void run () {
 			// error(0) -= 0.005;	
 		}
 		// disturbance rejection mode
+		double input [2] = {0,0};
 		if(disturb_reject) {
 			// only turn on if in a balancing mode
 			if (MODE == 4 || MODE == 5) {
@@ -480,6 +501,10 @@ void run () {
 				Eigen::Matrix<double, 18, 1> q;
 
 				// Ask MUNZIR how to get q angles
+
+                // TODO: setup 3dof model for passing simplified COM value stuff
+
+                // get list of q values from hardware
 
 				// // Extract Joint Angles from Full Model
 				// std::vector< BodyNode * > nodes = robot->getBodyNodes();
@@ -507,6 +532,8 @@ void run () {
 				// getSimple(robot,q);
 				// after getSimple() is called, we need A,B matrices for LQR
 				// Wheeled Inverted Pendulum Parameters
+
+
 				double I_ra = 0;
 				double gamma = 1.0;
 				double g = 9.81;
@@ -530,53 +557,53 @@ void run () {
 				Eigen::VectorXd x_obs_wheel(3);
 				Eigen::VectorXd x_obs_com(3); 
 
-				// Extract Parameters from Simple Model
-				std::vector< BodyNode * > nodesSimple = m3DOF->getBodyNodes();
-				for(auto const& n: nodesSimple) {
-					std::string node_name = n->getName();
+				// // Extract Parameters from Simple Model
+				// std::vector< BodyNode * > nodesSimple = m3DOF->getBodyNodes();
+				// for(auto const& n: nodesSimple) {
+				// 	std::string node_name = n->getName();
 
-					// Extract Wheel Parameters
-					if(node_name.find("Wheel") != string::npos){
-						m_w = n->getMass();
-						n->getMomentOfInertia(Iw_xx,Iw_yy,Iw_zz,Iw_xy,Iw_xz,Iw_yz);
-						I_wa = Iw_xx;
-						r_w = 0.25;
-					}
+				// 	// Extract Wheel Parameters
+				// 	if(node_name.find("Wheel") != string::npos){
+				// 		m_w = n->getMass();
+				// 		n->getMomentOfInertia(Iw_xx,Iw_yy,Iw_zz,Iw_xy,Iw_xz,Iw_yz);
+				// 		I_wa = Iw_xx;
+				// 		r_w = 0.25;
+				// 	}
 
-					// Extract Body Parameters
-					if(node_name.find("Base") != string::npos){
-						M_g = n->getMass();
-						n->getMomentOfInertia(I_xx,I_yy,I_zz,I_xy,I_xz,I_yz);
-						Eigen::Vector3d com = n->getLocalCOM();
-						l_g = com[1];
-					}
-				}
+				// 	// Extract Body Parameters
+				// 	if(node_name.find("Base") != string::npos){
+				// 		M_g = n->getMass();
+				// 		n->getMomentOfInertia(I_xx,I_yy,I_zz,I_xy,I_xz,I_yz);
+				// 		Eigen::Vector3d com = n->getLocalCOM();
+				// 		l_g = com[1];
+				// 	}
+				// }
 
 
-				delta = (M_g*l_g+I_yy+pow(gamma,2)*I_ra)*(M_g+m_w)*pow(r_w,2)+I_wa+I_ra*pow(gamma,2)-pow(M_g*r_w*l_g-I_ra*pow(gamma,2),2);
-				c1 = (M_g+m_w)*pow(r_w,2)+I_wa+I_ra*pow(gamma,2)+M_g*r_w*l_g+I_ra*pow(gamma,2);
-				c2 = M_g*r_w*l_g+M_g*pow(l_g,2)+I_yy;
+				// delta = (M_g*l_g+I_yy+pow(gamma,2)*I_ra)*(M_g+m_w)*pow(r_w,2)+I_wa+I_ra*pow(gamma,2)-pow(M_g*r_w*l_g-I_ra*pow(gamma,2),2);
+				// c1 = (M_g+m_w)*pow(r_w,2)+I_wa+I_ra*pow(gamma,2)+M_g*r_w*l_g+I_ra*pow(gamma,2);
+				// c2 = M_g*r_w*l_g+M_g*pow(l_g,2)+I_yy;
 
-				// Hardcode Dynamics + Feedback for Now
-				Eigen::MatrixXd A(4,4);
-				Eigen::MatrixXd B(4,1);
+				// // Hardcode Dynamics + Feedback for Now
+				// Eigen::MatrixXd A(4,4);
+				// Eigen::MatrixXd B(4,1);
 
 				Eigen::MatrixXd A_(3,3);
 				Eigen::MatrixXd B_1(3,1);
 				Eigen::MatrixXd B_2(3,1);
 				Eigen::MatrixXd L_1(3,1);
 				Eigen::MatrixXd L_2(3,1);
-				// Eigen::MatrixXi C_(4,4);
+				Eigen::MatrixXi C_(4,4);
 
-				A << 0, 0, 1, 0,
-					 0, 0, 0, 1,
-					 ((M_g+m_w)*pow(r_w,2)+I_wa+I_ra*pow(gamma,2))*M_g*g*l_g/delta, 0, -c1*c_w/delta, c1*c_w/delta,
-					 (M_g*r_w*l_g-I_ra*pow(gamma,2))*M_g*g*l_g/delta, 0, c2*c_w/delta, -c2*c_w/delta;
+				// A << 0, 0, 1, 0,
+				// 	 0, 0, 0, 1,
+				// 	 ((M_g+m_w)*pow(r_w,2)+I_wa+I_ra*pow(gamma,2))*M_g*g*l_g/delta, 0, -c1*c_w/delta, c1*c_w/delta,
+				// 	 (M_g*r_w*l_g-I_ra*pow(gamma,2))*M_g*g*l_g/delta, 0, c2*c_w/delta, -c2*c_w/delta;
 
-				B << 0,
-					 0,
-					 -c1/delta,
-					 c2/delta;
+				// B << 0,
+				// 	 0,
+				// 	 -c1/delta,
+				// 	 c2/delta;
 				// TODO: Caclulate K using LQR here. Need a Q and R matrix as well
 				Eigen::VectorXd F(4);
 				Eigen::Matrix<double,4,1> N;
@@ -595,19 +622,21 @@ void run () {
 					  0, 0, 0;
 
 				B_1 << 0,
-					   c2/delta,
+					   0.102378,
 					   0;
 
 				B_2 << 0,
-					   -c1/delta,
+					   -0.049856,
 					   0;
-
 
 				L_1 << 1159.99999999673,173438.396407957,1343839.4084839;
 				L_2 = L_1;
-				// TODO: fill in psi and thetas with proper values from state
-				x_sys << com, com_dot, theta, theta_dot;
-				//create observer states
+
+
+
+				x_sys << state(0),state(1),state(2),state(3); // com angle, com_dot, theta wheel (position), theta_dot;
+				
+                //create observer states
 				x_obs_com << com_hat, com_dot_hat, f_com;
 				x_obs_wheel << theta_hat, theta_dot_hat, f_theta;
 				x_obs << x_obs_wheel, x_obs_com;
@@ -646,7 +675,8 @@ void run () {
 				// Change torques to current for motor input
 				// TODO: Verify this is correct ratio and move to top of .cpp
 				double motor_constant = 0.85; //Nm/A
-				double input [2] = {tau/(2*motor_constant), tau/(2*motor_constant)};
+				input[0] = tau/(2*motor_constant);
+				input[1] = tau/(2*motor_constant);
 
 			}
 			// Don't attempt disturbance rejection outside of balancing modes
@@ -655,23 +685,28 @@ void run () {
 				disturb_reject = false;
 			}
 		}
+
+		double u_theta;
+		double u_x;
+		double u_spin;
 		// ----Normal balancing code----
 		// written as an if statement so that calling disturbance rejection
-		// when not in a balancing mode runs this code
+		// when not in a balancing mode runs this code			
 		if (!disturb_reject) {
 			if(debug) cout << "error: " << error.transpose() << ", imu: " << krang->imu / M_PI * 180.0 << endl;
 
 			// Compute the current
-			double u_theta = K.topLeftCorner<2,1>().dot(error.topLeftCorner<2,1>());
-			double u_x = K(2)*error(2) + K(3)*error(3);
-			double u_spin =  -K.bottomLeftCorner<2,1>().dot(error.bottomLeftCorner<2,1>());
+			u_theta = K.topLeftCorner<2,1>().dot(error.topLeftCorner<2,1>());
+			u_x = K(2)*error(2) + K(3)*error(3);
+			u_spin =  -K.bottomLeftCorner<2,1>().dot(error.bottomLeftCorner<2,1>());
 			u_spin = max(-30.0, min(30.0, u_spin));
 			// Override the u_spin to exert a force with the end-effector
 			if(spinFT) computeSpin(u_spin);
 
 			// Compute the input for left and right wheels
 			if(joystickControl && ((MODE == 1) || (MODE == 6))) {u_x = 0.0; u_spin = 0.0;}
-			double input [2] = {u_theta + u_x + u_spin, u_theta + u_x - u_spin};
+			input[0] = u_theta + u_x + u_spin;
+			input[1] = u_theta + u_x - u_spin;
 		}
 		input[0] = max(-49.0, min(49.0, input[0]));
 		input[1] = max(-49.0, min(49.0, input[1]));
@@ -754,51 +789,111 @@ void run () {
 					 SOMATIC__EVENT__CODES__PROC_STOPPING, NULL, NULL);
 }
 
-void getSimple(SkeletonPtr threeDOF, Eigen::Matrix<double, 18, 1> q) 
+
+
+// TODO: Verify local frame vs global frame translation with experiments
+
+// DART 6 -> DART 3
+// setPositions(q) -> setPose(const Eigen::VectorXd&)
+// getBodyNode(string) -> getNode(string)
+// getCOM(dart::dynamics::Frame) -> getWorldCOM() ???  Can specify a base frame?
+// bodyNode->getCOM -> 
+// getNumBodyNodes() -> getNumNodes()
+// getMomentOfInertia() (defined around center of mass) -> getLocalInertia / getWorldInertia() returns 3d Eigen::Matrix3d& inertia
+// setMomentOfInertia() -> setLocalInertia(ixx,iyy,izz,ixy,ixz,iyz)
+// setLocalCOM() -> setLocalCOM(Eigen::Vector3d&)
+// getTransform(baseFrame).rotation() -> getLocalTransform() returns Eigen::Matrix4d ; extract 3x3 rotation
+// getMass() -> getMass()
+// setMass() -> setMass()
+
+
+// void getSimple(SkeletonPtr threeDOF, Eigen::Matrix<double, 18, 1> q) 
+void getSimple(Eigen::Matrix<double, 18, 1> q) 
 {
 	// Load the full body with fixed wheel and set the pose q
-	dart::utils::DartLoader loader;
-	// TODO: Update this hard-coded location to match
-	SkeletonPtr krangFixedWheel =
-		loader.parseSkeleton("/home/n8k9/Projects/GaTech/Krang/Krang_Disturbance/dart/3DOF-WIP/krang_fixed_wheel.urdf");
-	krangFixedWheel->setName("m18DOF");
-	krangFixedWheel->setPositions(q);
+	// dart::utils::DartLoader loader;
+    DartLoader dl;
+
+
+	// SkeletonPtr krangFixedWheel =
+        // loader.parseSkeleton("/home/nathan/Krang-Software/Project/krang/demos/balancing/urdf/krang_fixed_wheel.urdf");
+    SkeletonDynamics* krangFixedWheel = 
+		dl.parseSkeleton("/home/nathan/Krang-Software/Project/krang/demos/balancing/urdf/krang_fixed_wheel.urdf");
 	
+    krangFixedWheel->setName("m18DOF");
+	
+    // krangFixedWheel->setPositions(q);
+	krangFixedWheel->setPose(q);
+
 	// Body Mass
-	double mFull = krangFixedWheel->getMass(); 
-	double mLWheel = krangFixedWheel->getBodyNode("LWheel")->getMass();
+	double mFull = krangFixedWheel->getMass();
+	// double mLWheel = krangFixedWheel->getBodyNode("LWheel")->getMass(); 
+    double mLWheel = krangFixedWheel->getNode("LWheel")->getMass(); 
 	double mBody = mFull - mLWheel;
+
 
 	// Body COM
 	Eigen::Vector3d bodyCOM;
-	dart::dynamics::Frame* baseFrame = krangFixedWheel->getBodyNode("Base");
-	bodyCOM = (mFull*krangFixedWheel->getCOM(baseFrame) - mLWheel*krangFixedWheel->getBodyNode("LWheel")->getCOM(baseFrame))/(mFull - mLWheel);
+
+	// dart::dynamics::Frame* baseFrame = krangFixedWheel->getBodyNode("Base");
+	
+    // bodyCOM = (mFull*krangFixedWheel->getCOM(baseFrame) - mLWheel*krangFixedWheel->getBodyNode("LWheel")->getCOM(baseFrame))/(mFull - mLWheel);
+    // CHECK HERE: LOCAL FRAME VS WORLD FRAME
+    // bodyCOM = (mFull*krangFixedWheel->getWorldCOM() - mLWheel*krangFixedWheel->getNode("LWheel")->getWorldCOM())/(mFull - mLWheel);
+    bodyCOM = (mFull*krangFixedWheel->getWorldCOM() - mLWheel*krangFixedWheel->getNode("LWheel")->getLocalCOM())/(mFull - mLWheel);
+
 
 	// Body inertia
-	int nBodies = krangFixedWheel->getNumBodyNodes();
-	Eigen::Matrix3d iMat;
+
+	// int nBodies = krangFixedWheel->getNumBodyNodes();
+    int nBodies = krangFixedWheel->getNumNodes();
+
+	// Eigen::Matrix3d iMat;
+    Eigen::Matrix3d iMat;
+
 	Eigen::Matrix3d iBody = Eigen::Matrix3d::Zero();
 	double ixx, iyy, izz, ixy, ixz, iyz;  
+    Eigen::Matrix4d trans;
 	Eigen::Matrix3d rot;
 	Eigen::Vector3d t;
 	Eigen::Matrix3d tMat;
-	dart::dynamics::BodyNodePtr b;
+
+	// dart::dynamics::BodyNodePtr b;
+    kinematics::BodyNode* b;
+
 	double m;
 	for(int i=1; i<nBodies; i++){ // Skipping LWheel
-		b = krangFixedWheel->getBodyNode(i);
-		b->getMomentOfInertia(ixx, iyy, izz, ixy, ixz, iyz);
-		rot = b->getTransform(baseFrame).rotation(); 
-		t = bodyCOM - b->getCOM(baseFrame) ; // Position vector from local COM to body COM expressed in base frame
+
+		// b = krangFixedWheel->getBodyNode(i);
+        b = krangFixedWheel->getNode(i);
+		
+        // b->getMomentOfInertia(ixx, iyy, izz, ixy, ixz, iyz);
+        // iMat << ixx, ixy, ixz, // Inertia tensor of the body around its CoM expressed in body frame
+        //      ixy, iyy, iyz,
+        //      ixz, iyz, izz;
+        iMat = b->getLocalInertia();
+		
+        // rot = b->getTransform(baseFrame).rotation(); 
+        trans = b->getLocalTransform(); 
+        rot << trans(0,0), trans(0,1), trans(0,2),
+               trans(1,0), trans(1,1), trans(1,2),
+               trans(2,0), trans(2,1), trans(2,2);
+
+        // Position vector from local COM to body COM expressed in base frame
+		// t = bodyCOM - b->getCOM(baseFrame);
+        t = bodyCOM - b->getLocalCOM();
+
 		m = b->getMass();
-		iMat << ixx, ixy, ixz, // Inertia tensor of the body around its CoM expressed in body frame
-				ixy, iyy, iyz,
-				ixz, iyz, izz;
+
 		iMat = rot*iMat*rot.transpose(); // Inertia tensor of the body around its CoM expressed in base frame
 		tMat << (t(1)*t(1)+t(2)*t(2)), (-t(0)*t(1)),          (-t(0)*t(2)),
 				(-t(0)*t(1)),          (t(0)*t(0)+t(2)*t(2)), (-t(1)*t(2)),
 				(-t(0)*t(2)),          (-t(1)*t(2)),          (t(0)*t(0)+t(1)*t(1));
 		iMat = iMat + m*tMat; // Parallel Axis Theorem
 		iBody += iMat;
+    }
+
+
 
 	// Aligning threeDOF base frame to have the y-axis pass through the CoM
 	double th = atan2(bodyCOM(2), bodyCOM(1));
@@ -808,6 +903,11 @@ void getSimple(SkeletonPtr threeDOF, Eigen::Matrix<double, 18, 1> q)
 	bodyCOM = rot*bodyCOM;
 	iBody = rot*iBody*rot.transpose();
 
+
+    // Set the 3 DOF robot parameters
+    // threeDOF->getBodyNode("Base")->setMomentOfInertia(iBody(0,0), iBody(1,1), iBody(2,2), iBody(0,1), iBody(0,2), iBody(1,2));
+    // threeDOF->getBodyNode("Base")->setLocalCOM(bodyCOM);
+    // threeDOF->getBodyNode("Base")->setMass(mBody);
 
 	// Print them out
 	cout << "mass: " << mBody << endl;
@@ -840,14 +940,7 @@ void init() {
 	// Create a thread to wait for user input to begin balancing
 	pthread_t kbhitThread;
 	pthread_create(&kbhitThread, NULL, &kbhit, NULL);
-	// TODO: use getSimple here to initialize the observer values
-	theta_hat = 0;
-	theta_dot_hat = 0;
-	f_theta = 1;
 
-	com_hat = 0;
-	com_dot_hat = 0;
-	f_com = 1;
 }
 
 /* ******************************************************************************************** */
