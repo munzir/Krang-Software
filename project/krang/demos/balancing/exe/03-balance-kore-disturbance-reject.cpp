@@ -811,14 +811,14 @@ void run () {
 void getSimple(Eigen::Matrix<double, 18, 1> q) 
 {
 	// Load the full body with fixed wheel and set the pose q
-	// dart::utils::DartLoader loader;
-    DartLoader dl;
+	dart::utils::DartLoader loader;
+    // DartLoader dl;
 
 
-	// SkeletonPtr krangFixedWheel =
-        // loader.parseSkeleton("/home/nathan/Krang-Software/Project/krang/demos/balancing/urdf/krang_fixed_wheel.urdf");
-    SkeletonDynamics* krangFixedWheel = 
-		dl.parseSkeleton("/home/nathan/Krang-Software/Project/krang/demos/balancing/urdf/krang_fixed_wheel.urdf");
+	SkeletonPtr krangFixedWheel =
+        loader.parseSkeleton("/home/nathan/Krang-Software/Project/krang/demos/balancing/urdf/krang_fixed_wheel.urdf");
+  //   SkeletonDynamics* krangFixedWheel = 
+		// dl.parseSkeleton("/home/nathan/Krang-Software/Project/krang/demos/balancing/urdf/krang_fixed_wheel.urdf");
 	
     krangFixedWheel->setName("m18DOF");
 	
@@ -827,29 +827,29 @@ void getSimple(Eigen::Matrix<double, 18, 1> q)
 
 	// Body Mass
 	double mFull = krangFixedWheel->getMass();
-	// double mLWheel = krangFixedWheel->getBodyNode("LWheel")->getMass(); 
-    double mLWheel = krangFixedWheel->getNode("LWheel")->getMass(); 
+	double mLWheel = krangFixedWheel->getBodyNode("LWheel")->getMass(); 
+    // double mLWheel = krangFixedWheel->getNode("LWheel")->getMass(); 
 	double mBody = mFull - mLWheel;
 
 
 	// Body COM
 	Eigen::Vector3d bodyCOM;
 
-	// dart::dynamics::Frame* baseFrame = krangFixedWheel->getBodyNode("Base");
-	
-    // bodyCOM = (mFull*krangFixedWheel->getCOM(baseFrame) - mLWheel*krangFixedWheel->getBodyNode("LWheel")->getCOM(baseFrame))/(mFull - mLWheel);
+	dart::dynamics::Frame* baseFrame = krangFixedWheel->getBodyNode("Base");
+    bodyCOM = (mFull*krangFixedWheel->getCOM(baseFrame) - mLWheel*krangFixedWheel->getBodyNode("LWheel")->getCOM(baseFrame))/(mFull - mLWheel);
+    
     // CHECK HERE: LOCAL FRAME VS WORLD FRAME
     // bodyCOM = (mFull*krangFixedWheel->getWorldCOM() - mLWheel*krangFixedWheel->getNode("LWheel")->getWorldCOM())/(mFull - mLWheel);
-    bodyCOM = (mFull*krangFixedWheel->getWorldCOM() - mLWheel*krangFixedWheel->getNode("LWheel")->getLocalCOM())/(mFull - mLWheel);
+    // bodyCOM = (mFull*krangFixedWheel->getWorldCOM() - mLWheel*krangFixedWheel->getNode("LWheel")->getLocalCOM())/(mFull - mLWheel);
 
 
 	// Body inertia
 
-	// int nBodies = krangFixedWheel->getNumBodyNodes();
-    int nBodies = krangFixedWheel->getNumNodes();
+	int nBodies = krangFixedWheel->getNumBodyNodes();
+    // int nBodies = krangFixedWheel->getNumNodes();
 
-	// Eigen::Matrix3d iMat;
-    Eigen::Matrix3d iMat;
+	Eigen::Matrix3d iMat;
+    // Eigen::Matrix3d iMat;
 
 	Eigen::Matrix3d iBody = Eigen::Matrix3d::Zero();
 	double ixx, iyy, izz, ixy, ixz, iyz;  
@@ -858,30 +858,30 @@ void getSimple(Eigen::Matrix<double, 18, 1> q)
 	Eigen::Vector3d t;
 	Eigen::Matrix3d tMat;
 
-	// dart::dynamics::BodyNodePtr b;
-    kinematics::BodyNode* b;
+	dart::dynamics::BodyNodePtr b;
+    // kinematics::BodyNode* b;
 
 	double m;
 	for(int i=1; i<nBodies; i++){ // Skipping LWheel
 
-		// b = krangFixedWheel->getBodyNode(i);
-        b = krangFixedWheel->getNode(i);
+		b = krangFixedWheel->getBodyNode(i);
+        // b = krangFixedWheel->getNode(i);
 		
-        // b->getMomentOfInertia(ixx, iyy, izz, ixy, ixz, iyz);
-        // iMat << ixx, ixy, ixz, // Inertia tensor of the body around its CoM expressed in body frame
-        //      ixy, iyy, iyz,
-        //      ixz, iyz, izz;
-        iMat = b->getLocalInertia();
+        b->getMomentOfInertia(ixx, iyy, izz, ixy, ixz, iyz);
+        iMat << ixx, ixy, ixz, // Inertia tensor of the body around its CoM expressed in body frame
+             ixy, iyy, iyz,
+             ixz, iyz, izz;
+        // iMat = b->getLocalInertia();
 		
-        // rot = b->getTransform(baseFrame).rotation(); 
+        rot = b->getTransform(baseFrame).rotation(); 
         trans = b->getLocalTransform(); 
-        rot << trans(0,0), trans(0,1), trans(0,2),
-               trans(1,0), trans(1,1), trans(1,2),
-               trans(2,0), trans(2,1), trans(2,2);
+        // rot << trans(0,0), trans(0,1), trans(0,2),
+        //        trans(1,0), trans(1,1), trans(1,2),
+        //        trans(2,0), trans(2,1), trans(2,2);
 
         // Position vector from local COM to body COM expressed in base frame
-		// t = bodyCOM - b->getCOM(baseFrame);
-        t = bodyCOM - b->getLocalCOM();
+		t = bodyCOM - b->getCOM(baseFrame);
+        // t = bodyCOM - b->getLocalCOM();
 
 		m = b->getMass();
 
@@ -978,8 +978,8 @@ int main(int argc, char* argv[]) {
 
 	// Load the world and the robot
 	DartLoader dl;
-	// world = dl.parseWorld("../../../experiments/common/scenes/01-World-Robot.urdf");
-	world = dl.parseWorld("/etc/kore/scenes/01-World-Robot.urdf");
+	world = dl.parseWorld("../../../experiments/common/scenes/01-World-Robot.urdf");
+	// world = dl.parseWorld("/etc/kore/scenes/01-World-Robot.urdf");
 	assert((world != NULL) && "Could not find the world");
 	robot = world->getSkeleton(0);
 
