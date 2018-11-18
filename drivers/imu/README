@@ -1,0 +1,24 @@
+This is a collection of stuff for publishing states from imu-type devices on ach channels.
+For basic library calls to read these devices, see ssdmu.c/h. This library also includes special functionality for Krang, such as an easy calculating of the pitch.
+
+The daemon return a double vector with the following meanings:
+
+[0] Linear acceleration along x-axis as g
+[1] Linear acceleration along y-axis as g
+[2] Linear acceleration along z-axis as g
+[3] Rotation about x-axis as rads/sec
+[4] Rotation about y-axis as rads/sec
+[5] Rotation about z-axis as rads/sec
+
+Files:
+ssdmu.c/h - basic library for the imu
+imud.c - the imu publisher
+imu_listen_and_print.c - example program for how to listen to a imu channel and unpack it
+
+Usage:
+
+$ ./imud -C (the first time)
+-or-
+$ ./imud (if the channel already exists)
+
+$ ./imu_listen_and_print --channel="imu-data"
