@@ -33,7 +33,7 @@
  *
  */
 
-/** 
+/**
  * @file amciod.c
  * @author Jon Olson (main), Kasemsit Teeyapan, Evan Seguin, Jon Scholz, Neil Dantam
  * @author Munzir Zafar => virtual output manipulation
@@ -450,7 +450,7 @@ static int amciod_start(cx_t *cx, servo_vars_t *servos, size_t n){
     }
 
 		// Send the initial virtual output values
-		uint8_t rcmd;	
+		uint8_t rcmd;
 		if(	amccan_dl_virtual_out_ctrl(servos[1].handle, &rcmd, servos[1].canopen_id, vout ) != NTCAN_SUCCESS ) {
 			fprintf(stderr,"Couldn't set the virtual output\n");
 		}
@@ -461,7 +461,7 @@ static int amciod_start(cx_t *cx, servo_vars_t *servos, size_t n){
 
 		// mutex for multi-threading
 		servos[0].digitalOutCmdReceived=0;
-		servos[1].digitalOutCmdReceived=0; 
+		servos[1].digitalOutCmdReceived=0;
 
     return 0;
 }
@@ -569,11 +569,11 @@ static void amciod_run(cx_t *cx, servo_vars_t *servos) {
 static void *amciod_update_thfun( void *_cx ) {
     cx_t *cx = (cx_t*)_cx;
     while( !somatic_sig_received ) {
-				
-				
+
+
         // Update amcdrive state
         int r =  amcdrive_update_drives(cx->servos, n_modules);
-				
+
 
         somatic_hard_assert( r == NTCAN_SUCCESS, "Cannot update drive states!\n");
         for( size_t i = 0; i < n_modules; i++ ) {
@@ -666,16 +666,16 @@ amciod_execute( cx_t *cx, servo_vars_t *servos, Somatic__MotorCmd *msg ) {
 				status = amcdrive_set_current(&servos[1], motorRightCurrent);
 				aa_hard_assert( status == NTCAN_SUCCESS, "Cannot set current (Right)!\n");
 				pthread_mutex_unlock(&handleMutex);
-		}	
+		}
 
-		// If digital out command is received from a controller daemon (i.e. krang-balance-hack), 
+		// If digital out command is received from a controller daemon (i.e. krang-balance-hack),
 		// indicate a can msg should be sent in the other thread.
 		else if( msg->param == SOMATIC__MOTOR_PARAM__MOTOR_DIGITAL_OUT) {
 				uint8_t rcmd; NTCAN_RESULT r;
-				// TODO: See which port number is to be written and write only that port. Right now it is 
+				// TODO: See which port number is to be written and write only that port. Right now it is
 				// writing on all ports
 				if(msg->ivalues->data[1]==0) { vout = 0x0000;	}
-				else { vout = 0xFFFF;	}		
+				else { vout = 0xFFFF;	}
 				servos[1].digitalOutCmdReceived = 1;
 		}
 		else {

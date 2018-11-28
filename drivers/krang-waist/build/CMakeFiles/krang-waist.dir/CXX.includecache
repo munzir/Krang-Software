@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/krang-waist.cpp
+argp.h
+-
+pthread.h
+-
+somatic.h
+-
+somatic/daemon.h
+-
+unistd.h
+-
+

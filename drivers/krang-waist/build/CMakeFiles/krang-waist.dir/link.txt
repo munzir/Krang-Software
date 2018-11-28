@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/krang-waist.dir/krang-waist.cpp.o  -o krang-waist -lach -lsomatic -lamino -lprotobuf-c 

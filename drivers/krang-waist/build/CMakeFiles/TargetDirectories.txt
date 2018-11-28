@@ -1,0 +1,9 @@
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/install/strip.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/install/local.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/install.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/package.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/package_source.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/krang-waist.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/edit_cache.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/rebuild_cache.dir
+/home/munzir/Me/5-Work/01-PhD/01-WholeBodyControlAttempt1/Krang-Software/drivers/krang-waist/build/CMakeFiles/list_install_components.dir
