@@ -42,6 +42,7 @@
 #include <syslog.h>
 #include <somatic.h>
 #include <somatic/daemon.h>
+#include <time.h>
 #include "js.h"
 
 
@@ -278,7 +279,8 @@ int main( int argc, char **argv ) {
         fprintf(stderr, "jsdev:        %d\n", cx.opt_jsdev);
         fprintf(stderr, "channel:      %s\n", cx.opt_chan_name);
         fprintf(stderr, "period:       %fs\n", aa_tm_timespec2sec(cx.opt_period));
-        fprintf(stderr, "message size: %"PRIuPTR"\n", somatic__joystick__get_packed_size(msg) );
+        //fprintf(stderr, "message size: %"PRIuPTR"\n", somatic__joystick__get_packed_size(msg) );
+        fprintf(stderr, "message size: %ld\n", somatic__joystick__get_packed_size(msg) );
         fprintf(stderr,"-------\n");
    }
 
